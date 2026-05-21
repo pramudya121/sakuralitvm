@@ -69,7 +69,7 @@ function Analytics() {
           const wzkIsToken0 = info.token0.toLowerCase() === CONTRACTS.weth.toLowerCase();
           const wzkReserve = wzkIsToken0 ? r0 : r1;
           const otherReserve = wzkIsToken0 ? r1 : r0;
-          results.push({ pair: `${wzk.symbol}/${t.symbol}`, symA: wzk.symbol, symB: t.symbol, reserveA: wzkReserve.toFixed(4), reserveB: otherReserve.toFixed(4), tvlEth: wzkReserve * 2 });
+          results.push({ pair: `${wzk.symbol}/${t.symbol}`, symA: wzk.symbol, symB: t.symbol, logoA: wzk.logo, logoB: t.logo, reserveA: wzkReserve.toFixed(4), reserveB: otherReserve.toFixed(4), tvlEth: wzkReserve * 2 });
         } catch {}
       }
       if (alive) { setPools(results.sort((a, b) => b.tvlEth - a.tvlEth)); setPoolsLoading(false); }
