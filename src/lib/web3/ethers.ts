@@ -193,6 +193,21 @@ export async function acceptOffer(signer: any, tokenId: bigint | number, offerId
   return tx.wait();
 }
 
+// Accept an offer even when the NFT is currently listed: cancel listing first, then accept.
+export async function acceptOfferAuto(
+  signer: any,
+  tokenId: bigint | number,
+  offerIdx: bigint | number,
+  listingId?: bigint | number | null,
+) {
+  if (listingId !== undefined && listingId !== null) {
+    const mp = new Contract(CONTRACTS.marketplace, MARKETPLACE_ABI, signer);
+    const tx1 = await mp.cancelListing(listingId);
+    await tx1.wait();
+  }
+  return acceptOffer(signer, tokenId, offerIdx);
+}
+
 export async function cancelOffer(signer: any, tokenId: bigint | number, offerIdx: bigint | number) {
   const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
   const tx = await c.cancelOffer(CONTRACTS.nftCollection, tokenId, offerIdx);
