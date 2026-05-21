@@ -130,7 +130,7 @@ function Mint() {
 
       <div className="grid md:grid-cols-2 gap-5">
         {/* LEFT: Artwork */}
-        <div className="glass rounded-3xl p-5 glow-card">
+        <div className="form-panel rounded-3xl p-5 glow-card">
           <p className="text-sm font-semibold mb-3">Artwork</p>
           <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-background/40 border mb-4">
             <button onClick={() => setMode("upload")}
@@ -192,7 +192,7 @@ function Mint() {
         </div>
 
         {/* RIGHT: Metadata */}
-        <div className="glass rounded-3xl p-5 space-y-4">
+        <div className="form-panel rounded-3xl p-5 space-y-4">
           <div>
             <label className="text-sm font-medium">Name <span className="text-primary">*</span></label>
             <Input value={name} onChange={(e) => setName(e.target.value)}

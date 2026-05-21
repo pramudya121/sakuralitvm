@@ -200,7 +200,7 @@ function EditDialog({ profile, onSave }: { profile: DBProfile | null; onSave: (p
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild><Button variant="outline" size="sm"><Edit2 className="w-4 h-4 mr-2" /> Edit</Button></DialogTrigger>
-      <DialogContent className="glass max-h-[90vh] overflow-y-auto">
+      <DialogContent className="form-panel max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Edit Profile</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Input placeholder="Display name" value={draft.display_name ?? ""} onChange={(e) => setDraft({ ...draft, display_name: e.target.value })} />
