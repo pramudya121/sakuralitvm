@@ -341,6 +341,17 @@ export async function removeLiquidityETH(signer: any, token: string, liquidity: 
   return tx.wait();
 }
 
+// Send native zkLTC or ERC20 token (amount as decimal string)
+export async function sendToken(signer: any, tokenAddress: string | "native", to: string, amountEth: string) {
+  if (tokenAddress === "native") {
+    const tx = await signer.sendTransaction({ to, value: parseEther(amountEth) });
+    return tx.wait();
+  }
+  const c = new Contract(tokenAddress, ERC20_ABI, signer);
+  const tx = await c.transfer(to, parseEther(amountEth));
+  return tx.wait();
+}
+
 // ---------- helpers ----------
 export function fileToDataUrl(file: File): Promise<string> {
   return new Promise((res, rej) => {
