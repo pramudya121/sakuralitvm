@@ -141,12 +141,31 @@
   border: 1px solid color-mix(in oklab, var(--border) 100%, transparent);
 }
 
+/* Solid panel for forms — never transparent */
+.form-panel {
+  background: var(--card);
+  background-color: color-mix(in oklab, var(--card) 100%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 28px -16px color-mix(in oklab, var(--primary) 35%, transparent);
+}
+.dark .form-panel {
+  background: oklch(0.19 0.035 285);
+}
+
 /* Solid DEX panel (no transparency) */
 .dex-panel {
   background: #0c0718;
   color: #fff;
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 20px 60px -20px rgba(236, 72, 153, 0.25);
+}
+
+/* Petal size variants for richer sakura storm */
+.petal.petal-sm { width: 10px; height: 10px; opacity: 0.85; }
+.petal.petal-lg { width: 22px; height: 22px; }
+.petal.petal-bright {
+  background: radial-gradient(circle at 30% 30%, oklch(0.98 0.06 350), oklch(0.75 0.22 350));
+  filter: drop-shadow(0 3px 6px rgba(255,120,170,0.55));
 }
 
 .glow-card {

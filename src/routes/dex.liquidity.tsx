@@ -140,7 +140,7 @@ function AddLiq({ slippage }: { slippage: number }) {
     setBusy(true);
     try {
       toast.loading("Approving & adding liquidity...", { id: "add" });
-      await addLiquidityETH(signer, bTokenAddr, parseEther(amtB), amtA);
+      await addLiquidityETH(signer, bTokenAddr, parseEther(amtB), amtA, slippage);
       toast.success("Liquidity added!", { id: "add" });
       setAmtA(""); setAmtB(""); setTick((t) => t + 1);
     } catch (e: any) {
