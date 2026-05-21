@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { Award, Edit2, Twitter, Globe, Copy, ExternalLink, Tag, Wallet, TrendingUp, Image as ImageIcon } from "lucide-react";
+import { Award, Edit2, Twitter, Globe, Copy, ExternalLink, Tag, Wallet, TrendingUp, Image as ImageIcon, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,7 @@ import { useWallet } from "@/contexts/WalletContext";
 import { useAllNFTs, useAllListings } from "@/lib/web3/hooks";
 import { NFTCard } from "@/components/NFTCard";
 import { PortfolioPanel } from "@/components/PortfolioPanel";
+import { MyNFTOffers } from "@/components/MyNFTOffers";
 import { shortAddr } from "@/lib/web3/ethers";
 import { CHAIN } from "@/lib/web3/contracts";
 import { useProfile, type DBProfile } from "@/lib/supabase-hooks";
@@ -125,6 +126,7 @@ function Profile() {
         <TabsList className="glass">
           <TabsTrigger value="collection">Collection ({owned.length})</TabsTrigger>
           <TabsTrigger value="listed">Listed ({myListings.length})</TabsTrigger>
+          <TabsTrigger value="offers"><Inbox className="w-3 h-3 mr-1" /> Offers</TabsTrigger>
           <TabsTrigger value="portfolio">Tokens</TabsTrigger>
         </TabsList>
         <TabsContent value="collection" className="space-y-4 mt-4">
@@ -159,6 +161,9 @@ function Profile() {
               })}
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="offers" className="mt-4">
+          <MyNFTOffers />
         </TabsContent>
         <TabsContent value="portfolio" className="mt-4">
           <PortfolioPanel />
