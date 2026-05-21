@@ -19,7 +19,7 @@ export const Route = createFileRoute("/analytics")({
 
 const COLORS = ["#e879f9", "#f472b6", "#a78bfa", "#60a5fa", "#34d399", "#facc15", "#fb923c", "#f87171"];
 
-type PoolStat = { pair: string; symA: string; symB: string; reserveA: string; reserveB: string; tvlEth: number };
+type PoolStat = { pair: string; symA: string; symB: string; logoA: string; logoB: string; reserveA: string; reserveB: string; tvlEth: number };
 
 function StatCard({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
   return (
