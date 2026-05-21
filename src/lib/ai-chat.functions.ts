@@ -10,14 +10,22 @@ const MessageSchema = z.object({
   name: z.string().optional(),
 });
 
-// Tools exposed to the AI. The CLIENT executes swap/wrap actions because
-// they need the user's signer; the SERVER only proposes parameters.
+// Tools exposed to the AI. The CLIENT executes any tool that needs the user's
+// signer (swap, send, wrap, add_liquidity). The server only formulates plans.
 const TOOLS = [
   {
     type: "function",
     function: {
       name: "list_tokens",
-      description: "List all supported tokens on Sakura DEX (symbol, name, address).",
+      description: "List all supported tokens on Sakura DEX (symbol, name, address, decimals).",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_balances",
+      description: "Get balances for the currently connected user across all supported tokens.",
       parameters: { type: "object", properties: {}, additionalProperties: false },
     },
   },
@@ -25,7 +33,7 @@ const TOOLS = [
     type: "function",
     function: {
       name: "get_swap_quote",
-      description: "Get an estimated swap quote between two tokens on Sakura DEX. Returns amountOut, route, price impact.",
+      description: "Get an estimated swap quote between two tokens on Sakura DEX. Returns amountOut, route hops.",
       parameters: {
         type: "object",
         properties: {
@@ -42,7 +50,7 @@ const TOOLS = [
     type: "function",
     function: {
       name: "propose_swap",
-      description: "Propose a swap for the user to confirm in their wallet. Use AFTER calling get_swap_quote.",
+      description: "Open the user's wallet to confirm a swap. Use AFTER get_swap_quote shows acceptable output.",
       parameters: {
         type: "object",
         properties: {
@@ -59,12 +67,53 @@ const TOOLS = [
   {
     type: "function",
     function: {
+      name: "propose_send",
+      description: "Open the user's wallet to confirm sending a token to another address.",
+      parameters: {
+        type: "object",
+        properties: {
+          symbol: { type: "string", description: "Token symbol to send (zkLTC, wzkLTC, ETH, ...)." },
+          to: { type: "string", description: "Recipient 0x address." },
+          amount: { type: "string", description: "Decimal string amount, e.g. '0.5'." },
+        },
+        required: ["symbol", "to", "amount"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_pool_info",
+      description: "Get DEX pool reserves and TVL for a token vs wzkLTC.",
+      parameters: {
+        type: "object",
+        properties: { symbol: { type: "string", description: "Token symbol paired with wzkLTC." } },
+        required: ["symbol"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_marketplace_stats",
+      description: "Return total listings count and marketplace fee on Sakura NFT marketplace.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "navigate",
       description: "Navigate the user to an app page.",
       parameters: {
         type: "object",
         properties: {
-          path: { type: "string", enum: ["/", "/marketplace", "/mint", "/collections", "/dex/swap", "/dex/liquidity", "/activity", "/profile", "/analytics", "/leaderboard", "/watchlist"] },
+          path: {
+            type: "string",
+            enum: ["/", "/marketplace", "/mint", "/collections", "/dex/swap", "/dex/liquidity", "/activity", "/profile", "/analytics", "/leaderboard", "/watchlist"],
+          },
         },
         required: ["path"],
         additionalProperties: false,
@@ -73,24 +122,27 @@ const TOOLS = [
   },
 ];
 
-const SYSTEM_PROMPT = `You are Sakura, the AI assistant for SakuraNFT — an NFT marketplace + DEX on the LitVM chain (native coin: zkLTC).
+const SYSTEM_PROMPT = `You are Sakura 🌸, the AI agent for SakuraNFT — an NFT marketplace + DEX on LitVM chain (native coin: zkLTC, wrapped: wzkLTC).
 
-Capabilities:
-- Answer questions about the platform (mint NFTs, list, buy, swap, wrap, add liquidity).
-- Help users swap tokens on Sakura DEX by calling get_swap_quote then propose_swap.
-- Navigate users to relevant pages via the navigate tool.
+CAPABILITIES (use tools when needed):
+- Answer platform questions: minting NFTs, listing, buying, swapping, wrapping, liquidity, analytics.
+- For SWAPS: call get_swap_quote → show estimate → call propose_swap (user confirms in wallet).
+- For SENDS: call propose_send to open the wallet send dialog.
+- For BALANCES: call get_balances. For POOL info: call get_pool_info. For listings stats: get_marketplace_stats.
+- For navigation: call navigate with one of the allowed paths.
 
-Rules:
+RULES:
 - ALWAYS reply in the SAME language the user wrote in (Indonesian, English, etc.). Auto-detect.
-- Be concise, friendly, use plain language. No long paragraphs.
-- For swaps: call get_swap_quote first, share the estimated output, then call propose_swap so the user can confirm in their wallet.
-- Never invent token addresses — only use ones returned by list_tokens.
-- If the user is not connected to a wallet, ask them to connect first before proposing swaps.`;
+- Use short markdown — lists, **bold**, tables when helpful. No long paragraphs.
+- Never invent token addresses; only use those returned by list_tokens.
+- If wallet is not connected, ask the user to connect before proposing swap/send.
+- Wrap = zkLTC→wzkLTC (1:1), Unwrap = wzkLTC→zkLTC (1:1). No fee.
+- Confirm risky actions (swap/send) briefly before calling the propose_* tool.`;
 
 export const chatAgent = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({
-      messages: z.array(MessageSchema).min(1).max(40),
+      messages: z.array(MessageSchema).min(1).max(60),
     }).parse(input),
   )
   .handler(async ({ data }) => {
