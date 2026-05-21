@@ -59,19 +59,17 @@ function Analytics() {
       setPoolsLoading(true);
       const wzk = TOKENS.find((t) => t.symbol === "wzkLTC")!;
       const candidates = TOKENS.filter((t) => t.address && t.address !== "native" && t.symbol !== "wzkLTC" && /^0x[0-9a-fA-F]{40}$/.test(t.address));
-      const results: PoolStat[] = [];
-      for (const t of candidates) {
-        try {
-          const info = await getPairInfo(CONTRACTS.weth, t.address as string);
-          if (!info.pair) continue;
-          const r0 = Number(formatEther(info.reserve0));
-          const r1 = Number(formatEther(info.reserve1));
-          const wzkIsToken0 = info.token0.toLowerCase() === CONTRACTS.weth.toLowerCase();
-          const wzkReserve = wzkIsToken0 ? r0 : r1;
-          const otherReserve = wzkIsToken0 ? r1 : r0;
-          results.push({ pair: `${wzk.symbol}/${t.symbol}`, symA: wzk.symbol, symB: t.symbol, logoA: wzk.logo, logoB: t.logo, reserveA: wzkReserve.toFixed(4), reserveB: otherReserve.toFixed(4), tvlEth: wzkReserve * 2 });
-        } catch {}
-      }
+      const settled = await Promise.allSettled(candidates.map(async (t) => {
+        const info = await getPairInfo(CONTRACTS.weth, t.address as string);
+        if (!info.pair) return null;
+        const r0 = Number(formatEther(info.reserve0));
+        const r1 = Number(formatEther(info.reserve1));
+        const wzkIsToken0 = info.token0.toLowerCase() === CONTRACTS.weth.toLowerCase();
+        const wzkReserve = wzkIsToken0 ? r0 : r1;
+        const otherReserve = wzkIsToken0 ? r1 : r0;
+        return { pair: `${wzk.symbol}/${t.symbol}`, symA: wzk.symbol, symB: t.symbol, logoA: wzk.logo, logoB: t.logo, reserveA: wzkReserve.toFixed(4), reserveB: otherReserve.toFixed(4), tvlEth: wzkReserve * 2 } as PoolStat;
+      }));
+      const results = settled.flatMap((s) => s.status === "fulfilled" && s.value ? [s.value] : []);
       if (alive) { setPools(results.sort((a, b) => b.tvlEth - a.tvlEth)); setPoolsLoading(false); }
     })();
     return () => { alive = false; };
