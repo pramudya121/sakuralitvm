@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNFT, useOffers } from "@/lib/web3/hooks";
 import { useWallet } from "@/contexts/WalletContext";
-import { acceptOffer, buyNFT, cancelListing, cancelOffer, listNFT, makeOffer, shortAddr, updateListingPrice, transferNFT, getMarketplaceFeeInfo } from "@/lib/web3/ethers";
+import { acceptOfferAuto, buyNFT, cancelListing, cancelOffer, listNFT, makeOffer, shortAddr, updateListingPrice, transferNFT, getMarketplaceFeeInfo } from "@/lib/web3/ethers";
 import { isAddress } from "ethers";
 import { CHAIN } from "@/lib/web3/contracts";
 import { toast } from "sonner";
