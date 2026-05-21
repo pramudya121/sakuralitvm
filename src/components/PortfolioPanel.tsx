@@ -23,25 +23,23 @@ export function PortfolioPanel() {
 
   useEffect(() => {
     if (!address) { setHoldings([]); setLoading(false); return; }
+    let alive = true;
     (async () => {
       setLoading(true);
-      const items: Holding[] = [];
-      for (const t of TOKENS) {
-        try {
-          if (t.address === "native") {
-            items.push({ ...t, balance: +balance, usd: +balance });
-            continue;
-          }
-          if (!t.address || !isAddress(t.address)) continue;
-          const c = new Contract(t.address, ERC20_ABI, readProvider);
-          const raw: bigint = await c.balanceOf(address);
-          const bal = +formatUnits(raw, t.decimals);
-          if (bal > 0) items.push({ ...t, balance: bal, usd: bal });
-        } catch {}
-      }
-      setHoldings(items);
+      const settled = await Promise.allSettled(TOKENS.map(async (t) => {
+        if (t.address === "native") return { ...t, balance: +balance, usd: +balance } as Holding;
+        if (!t.address || !isAddress(t.address)) return null;
+        const c = new Contract(t.address, ERC20_ABI, readProvider);
+        const raw: bigint = await c.balanceOf(address);
+        const bal = +formatUnits(raw, t.decimals);
+        if (bal <= 0) return null;
+        return { ...t, balance: bal, usd: bal } as Holding;
+      }));
+      if (!alive) return;
+      setHoldings(settled.flatMap((s) => s.status === "fulfilled" && s.value ? [s.value] : []));
       setLoading(false);
     })();
+    return () => { alive = false; };
   }, [address, balance]);
 
   const chartData = useMemo(() =>
