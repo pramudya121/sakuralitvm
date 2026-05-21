@@ -328,7 +328,7 @@ export function AIChatWidget() {
                 </div>
                 <div className={`px-3 py-2 rounded-2xl text-sm max-w-[82%] break-words ${m.role === "user" ? "bg-fuchsia-500/20 text-white rounded-tr-sm" : "bg-white/5 text-white/90 rounded-tl-sm"}`}>
                   {m.role === "assistant" ? (
-                    <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-headings:my-1 prose-table:my-2 prose-code:text-fuchsia-300 prose-code:bg-white/10 prose-code:px-1 prose-code:rounded prose-a:text-fuchsia-300">
+                    <div className="text-sm leading-relaxed [&_p]:my-1 [&_ul]:my-1 [&_ul]:pl-4 [&_ul]:list-disc [&_ol]:my-1 [&_ol]:pl-4 [&_ol]:list-decimal [&_li]:my-0.5 [&_strong]:text-white [&_strong]:font-semibold [&_code]:bg-white/10 [&_code]:text-fuchsia-300 [&_code]:px-1 [&_code]:rounded [&_code]:text-xs [&_a]:text-fuchsia-300 [&_a]:underline [&_table]:my-2 [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_th]:bg-white/5 [&_td]:px-2 [&_td]:py-1 [&_td]:border-t [&_td]:border-white/5 [&_hr]:my-2 [&_hr]:border-white/10">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                     </div>
                   ) : (
