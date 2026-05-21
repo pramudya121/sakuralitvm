@@ -319,22 +319,25 @@ export async function getNativeBalance(owner: string): Promise<bigint> {
   return await readProvider.getBalance(owner);
 }
 
-export async function addLiquidityETH(signer: any, token: string, tokenAmount: bigint, ethAmountEth: string) {
+export async function addLiquidityETH(signer: any, token: string, tokenAmount: bigint, ethAmountEth: string, slippagePct = 1) {
   await approveToken(signer, token, CONTRACTS.router, tokenAmount);
   const router = new Contract(CONTRACTS.router, ROUTER_ABI, signer);
   const to = await signer.getAddress();
   const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-  const tx = await router.addLiquidityETH(token, tokenAmount, 0n, 0n, to, deadline, { value: parseEther(ethAmountEth) });
+  const ethAmount = parseEther(ethAmountEth);
+  const minToken = minOutWithSlippage(tokenAmount, slippagePct);
+  const minEth = minOutWithSlippage(ethAmount, slippagePct);
+  const tx = await router.addLiquidityETH(token, tokenAmount, minToken, minEth, to, deadline, { value: ethAmount });
   return tx.wait();
 }
 
-export async function removeLiquidityETH(signer: any, token: string, liquidity: bigint, pairAddr: string) {
+export async function removeLiquidityETH(signer: any, token: string, liquidity: bigint, pairAddr: string, minTokenOut: bigint = 0n, minEthOut: bigint = 0n) {
   // approve LP token
   await approveToken(signer, pairAddr, CONTRACTS.router, liquidity);
   const router = new Contract(CONTRACTS.router, ROUTER_ABI, signer);
   const to = await signer.getAddress();
   const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-  const tx = await router.removeLiquidityETH(token, liquidity, 0n, 0n, to, deadline);
+  const tx = await router.removeLiquidityETH(token, liquidity, minTokenOut, minEthOut, to, deadline);
   return tx.wait();
 }
 
