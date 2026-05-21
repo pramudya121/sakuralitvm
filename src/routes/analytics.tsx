@@ -232,16 +232,29 @@ function Analytics() {
                   <tr className="border-b border-white/10">
                     <th className="text-left py-2 px-2">Pair</th>
                     <th className="text-right py-2 px-2">wzkLTC</th>
-                    <th className="text-right py-2 px-2">Other</th>
+                    <th className="text-right py-2 px-2">Token</th>
                     <th className="text-right py-2 px-2">TVL ({CHAIN.symbol})</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pools.map((p) => (
                     <tr key={p.pair} className="border-b border-white/5 hover:bg-white/[0.02]">
-                      <td className="py-2 px-2 font-semibold">{p.pair}</td>
-                      <td className="py-2 px-2 text-right text-white/80">{p.reserveA}</td>
-                      <td className="py-2 px-2 text-right text-white/80">{p.reserveB} <span className="text-white/40 text-xs">{p.symB}</span></td>
+                      <td className="py-2 px-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-2">
+                            <img src={p.logoA} alt={p.symA} className="w-6 h-6 rounded-full ring-2 ring-[#160c26] bg-muted" onError={(e) => (e.currentTarget.style.display = "none")} />
+                            <img src={p.logoB} alt={p.symB} className="w-6 h-6 rounded-full ring-2 ring-[#160c26] bg-muted" onError={(e) => (e.currentTarget.style.display = "none")} />
+                          </div>
+                          <span className="font-semibold">{p.pair}</span>
+                        </div>
+                      </td>
+                      <td className="py-2 px-2 text-right text-white/80 font-mono">{p.reserveA}</td>
+                      <td className="py-2 px-2 text-right text-white/80 font-mono">
+                        <span className="inline-flex items-center gap-1.5">
+                          <img src={p.logoB} alt="" className="w-4 h-4 rounded-full" onError={(e) => (e.currentTarget.style.display = "none")} />
+                          {p.reserveB} <span className="text-white/40 text-xs">{p.symB}</span>
+                        </span>
+                      </td>
                       <td className="py-2 px-2 text-right font-semibold text-fuchsia-300">{p.tvlEth.toFixed(4)}</td>
                     </tr>
                   ))}
@@ -249,6 +262,24 @@ function Analytics() {
               </table>
             </div>
           )}
+        </Section>
+
+        {/* Token cards with logos */}
+        <Section title="Tracked Tokens">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {TOKENS.filter((t) => t.address && /^0x[0-9a-fA-F]{40}$/.test(t.address as string) || t.address === "native").map((t) => {
+              const pool = pools.find((p) => p.symB === t.symbol);
+              return (
+                <div key={t.symbol} className="rounded-2xl p-3 bg-white/[0.03] border border-white/10 flex items-center gap-3">
+                  <img src={t.logo} alt={t.symbol} className="w-10 h-10 rounded-full bg-muted" onError={(e) => (e.currentTarget.style.display = "none")} />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-white text-sm truncate">{t.symbol}</div>
+                    <div className="text-[10px] text-white/50 truncate">{pool ? `TVL ${pool.tvlEth.toFixed(2)} ${CHAIN.symbol}` : "No pool"}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </Section>
       </section>
     </div>
