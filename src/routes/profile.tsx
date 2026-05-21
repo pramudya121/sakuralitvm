@@ -162,6 +162,9 @@ function Profile() {
             </div>
           )}
         </TabsContent>
+        <TabsContent value="offers" className="mt-4">
+          <MyNFTOffers />
+        </TabsContent>
         <TabsContent value="portfolio" className="mt-4">
           <PortfolioPanel />
         </TabsContent>
