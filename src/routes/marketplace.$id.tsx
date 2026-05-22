@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Tag, ShoppingCart, X, Send, Check, Eye, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,7 @@ export const Route = createFileRoute("/marketplace/$id")({
 
 function NFTDetail() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const { nft, listing, loading } = useNFT(id);
   const offers = useOffers(id);
   const { signer, address } = useWallet();
@@ -169,7 +170,13 @@ function NFTDetail() {
               <p className="text-sm font-medium">List this NFT for sale</p>
               <div className="flex gap-2">
                 <Input type="number" step="0.001" placeholder={`Price in ${CHAIN.symbol}`} value={listPrice} onChange={(e) => setListPrice(e.target.value)} />
-                <Button onClick={() => wrap("list", () => listNFT(signer, nft.tokenId, listPrice))} disabled={!listPrice}>
+                <Button
+                  onClick={() => wrap("list",
+                    () => listNFT(signer, nft.tokenId, listPrice),
+                    () => { toast.success("Listed! Redirecting to Marketplace…"); setTimeout(() => navigate({ to: "/marketplace" }), 900); },
+                  )}
+                  disabled={!listPrice}
+                >
                   <Tag className="w-4 h-4 mr-2" /> List
                 </Button>
               </div>

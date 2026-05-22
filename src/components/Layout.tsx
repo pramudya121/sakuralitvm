@@ -31,31 +31,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <OnChainEventListener />
       <div className="relative z-10">
         <header className="sticky top-0 z-50 glass border-b">
-          <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-            <Link to="/" className="flex items-center gap-2 group">
-              <img src={sakuraLogo} alt="SakuraNFT" className="w-10 h-10 rounded-full shadow-lg group-hover:scale-110 transition-transform ring-1 ring-primary/40" />
-              <span className="font-bold text-lg gradient-text">SakuraNFT</span>
+          <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-3">
+            <Link to="/" className="flex items-center gap-2 group shrink-0">
+              <img src={sakuraLogo} alt="SakuraNFT" className="w-9 h-9 rounded-full shadow-lg group-hover:scale-110 transition-transform ring-1 ring-primary/40" />
+              <span className="font-bold text-lg gradient-text hidden sm:inline">SakuraNFT</span>
             </Link>
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav className="hidden xl:flex items-center gap-0.5 flex-1 justify-center min-w-0">
               {navItems.map((n) => (
                 <Link
                   key={n.to}
                   to={n.to}
-                  className="px-3 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent/40 transition-all"
-                  activeProps={{ className: "px-3 py-2 rounded-full text-sm font-medium text-primary bg-accent/60" }}
+                  className="px-2.5 py-1.5 rounded-full text-[13px] font-medium text-muted-foreground hover:text-primary hover:bg-accent/40 transition-all whitespace-nowrap"
+                  activeProps={{ className: "px-2.5 py-1.5 rounded-full text-[13px] font-medium text-primary bg-accent/60 whitespace-nowrap" }}
                 >
                   {n.label}
                 </Link>
               ))}
             </nav>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               <ThemeToggle />
               <NotificationBell />
               <WalletButton />
             </div>
           </div>
-          {/* mobile nav */}
-          <nav className="lg:hidden flex overflow-x-auto gap-1 px-3 pb-2 scrollbar-hide">
+          {/* tablet & mobile horizontally-scrollable nav */}
+          <nav className="xl:hidden flex overflow-x-auto gap-1 px-3 pb-2 scrollbar-hide">
             {navItems.map((n) => {
               const Icon = n.icon;
               return (

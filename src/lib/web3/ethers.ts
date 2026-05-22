@@ -91,7 +91,14 @@ export const routerRead = () => new Contract(CONTRACTS.router, ROUTER_ABI, readP
 export const factoryRead = () => new Contract(CONTRACTS.factory, FACTORY_ABI, readProvider);
 
 // ---------- NFT actions ----------
-export async function mintNFT(signer: any, file: File, name: string, description: string, onProgress?: (s: string) => void) {
+export async function mintNFT(
+  signer: any,
+  file: File,
+  name: string,
+  description: string,
+  onProgress?: (s: string) => void,
+  extra?: Record<string, any>,
+) {
   onProgress?.("Uploading image...");
   // Lazy import to keep web3 module client-bundle small
   const { supabase } = await import("@/integrations/supabase/client");
@@ -101,13 +108,12 @@ export async function mintNFT(signer: any, file: File, name: string, description
     .upload(path, file, { contentType: file.type, upsert: false });
   let imageUrl: string;
   if (upErr) {
-    // Fallback to data URL if storage fails
     onProgress?.("Storage upload failed, using on-chain encoding...");
     imageUrl = await fileToDataUrl(file);
   } else {
     imageUrl = supabase.storage.from("nft-images").getPublicUrl(path).data.publicUrl;
   }
-  const metadata = { name, description, image: imageUrl };
+  const metadata = { name, description, image: imageUrl, ...(extra ?? {}) };
   const tokenUri = "data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(metadata))));
   onProgress?.("Confirm in wallet...");
   const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, signer);
@@ -188,6 +194,15 @@ export async function makeOffer(signer: any, tokenId: bigint | number, priceEth:
 }
 
 export async function acceptOffer(signer: any, tokenId: bigint | number, offerIdx: bigint | number) {
+  // Offer contract uses transferFrom — requires NFT approval (per-token or operator).
+  const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, signer);
+  try {
+    const approved = await nft.getApproved(tokenId);
+    if (!approved || approved.toLowerCase() !== CONTRACTS.offer.toLowerCase()) {
+      const txA = await nft.approve(CONTRACTS.offer, tokenId);
+      await txA.wait();
+    }
+  } catch { /* if getApproved/approve fail (e.g. not owner) bubble up below */ }
   const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
   const tx = await c.acceptOffer(CONTRACTS.nftCollection, tokenId, offerIdx);
   return tx.wait();
@@ -382,16 +397,25 @@ export function shortAddr(a?: string) {
   return a.slice(0, 6) + "..." + a.slice(-4);
 }
 
-export function decodeTokenUri(uri: string): { name?: string; description?: string; image?: string } | null {
+export function decodeTokenUri(uri: string): { name?: string; description?: string; image?: string; category?: string; attributes?: any[]; collection?: any; royalty_bps?: number } | null {
   try {
+    let parsed: any = null;
     if (uri.startsWith("data:application/json;base64,")) {
       const json = atob(uri.replace("data:application/json;base64,", ""));
-      return JSON.parse(decodeURIComponent(escape(json)));
+      parsed = JSON.parse(decodeURIComponent(escape(json)));
+    } else if (uri.startsWith("data:application/json")) {
+      parsed = JSON.parse(decodeURIComponent(uri.split(",")[1] ?? ""));
+    } else { return null; }
+    // Legacy fix: some NFTs were minted with description = JSON.stringify({description, category, ...})
+    if (parsed && typeof parsed.description === "string" && parsed.description.trim().startsWith("{")) {
+      try {
+        const inner = JSON.parse(parsed.description);
+        if (inner && typeof inner === "object") {
+          parsed = { ...parsed, ...inner, description: typeof inner.description === "string" ? inner.description : "" };
+        }
+      } catch { /* leave as-is */ }
     }
-    if (uri.startsWith("data:application/json")) {
-      return JSON.parse(decodeURIComponent(uri.split(",")[1] ?? ""));
-    }
-    return null;
+    return parsed;
   } catch { return null; }
 }
 
