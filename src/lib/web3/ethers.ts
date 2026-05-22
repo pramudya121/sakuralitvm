@@ -194,6 +194,15 @@ export async function makeOffer(signer: any, tokenId: bigint | number, priceEth:
 }
 
 export async function acceptOffer(signer: any, tokenId: bigint | number, offerIdx: bigint | number) {
+  // Offer contract uses transferFrom — requires NFT approval (per-token or operator).
+  const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, signer);
+  try {
+    const approved = await nft.getApproved(tokenId);
+    if (!approved || approved.toLowerCase() !== CONTRACTS.offer.toLowerCase()) {
+      const txA = await nft.approve(CONTRACTS.offer, tokenId);
+      await txA.wait();
+    }
+  } catch { /* if getApproved/approve fail (e.g. not owner) bubble up below */ }
   const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
   const tx = await c.acceptOffer(CONTRACTS.nftCollection, tokenId, offerIdx);
   return tx.wait();
