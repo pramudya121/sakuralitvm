@@ -49,6 +49,7 @@ export const Route = createFileRoute("/marketplace/$id")({
 
 function NFTDetail() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const { nft, listing, loading } = useNFT(id);
   const offers = useOffers(id);
   const { signer, address } = useWallet();
