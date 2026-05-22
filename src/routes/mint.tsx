@@ -103,16 +103,14 @@ function Mint() {
     if (!file || !name) return toast.error("Artwork and name required");
     setBusy(true);
     try {
-      // Pack royalty + traits in description prefix for off-chain readers
       const metaTraits = traits.filter((t) => t.trait_type && t.value);
-      const richDesc = JSON.stringify({
-        description: desc,
+      const extra = {
         category,
         collection: collectionSlug ? { slug: collectionSlug, name: collectionName } : null,
         royalty_bps: Math.floor(Math.max(0, Math.min(50, +royalty || 0)) * 100),
         attributes: metaTraits,
-      });
-      const receipt = await mintNFT(signer, file, name, richDesc, setStatus);
+      };
+      const receipt = await mintNFT(signer, file, name, desc, setStatus, extra);
       toast.success("NFT minted successfully!");
       console.log(receipt);
       setTimeout(() => nav({ to: "/profile" }), 1000);
