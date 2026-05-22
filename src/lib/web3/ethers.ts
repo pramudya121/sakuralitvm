@@ -91,7 +91,14 @@ export const routerRead = () => new Contract(CONTRACTS.router, ROUTER_ABI, readP
 export const factoryRead = () => new Contract(CONTRACTS.factory, FACTORY_ABI, readProvider);
 
 // ---------- NFT actions ----------
-export async function mintNFT(signer: any, file: File, name: string, description: string, onProgress?: (s: string) => void) {
+export async function mintNFT(
+  signer: any,
+  file: File,
+  name: string,
+  description: string,
+  onProgress?: (s: string) => void,
+  extra?: Record<string, any>,
+) {
   onProgress?.("Uploading image...");
   // Lazy import to keep web3 module client-bundle small
   const { supabase } = await import("@/integrations/supabase/client");
@@ -101,13 +108,12 @@ export async function mintNFT(signer: any, file: File, name: string, description
     .upload(path, file, { contentType: file.type, upsert: false });
   let imageUrl: string;
   if (upErr) {
-    // Fallback to data URL if storage fails
     onProgress?.("Storage upload failed, using on-chain encoding...");
     imageUrl = await fileToDataUrl(file);
   } else {
     imageUrl = supabase.storage.from("nft-images").getPublicUrl(path).data.publicUrl;
   }
-  const metadata = { name, description, image: imageUrl };
+  const metadata = { name, description, image: imageUrl, ...(extra ?? {}) };
   const tokenUri = "data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(metadata))));
   onProgress?.("Confirm in wallet...");
   const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, signer);
