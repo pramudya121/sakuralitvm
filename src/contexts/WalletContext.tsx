@@ -12,6 +12,7 @@ type Ctx = {
   walletKind: WalletKind | null;
   connect: (kind: WalletKind) => Promise<void>;
   disconnect: () => void;
+  refreshWallet: () => Promise<void>;
 };
 
 const WalletCtx = createContext<Ctx | null>(null);
@@ -45,6 +46,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.removeItem("walletKind"); } catch {}
   }, []);
 
+  const refreshWallet = useCallback(async () => {
+    if (!provider || !address) return;
+    await refreshBalance(provider, address);
+  }, [provider, address, refreshBalance]);
+
   // Auto-reconnect on mount + listen for changes
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -66,8 +72,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     return () => { try { inj.removeListener("accountsChanged", handleAccts); inj.removeListener("chainChanged", handleChain); } catch {} };
   }, [connect, disconnect]);
 
-  const value = useMemo(() => ({ address, signer, provider, chainId, balance, walletKind, connect, disconnect }),
-    [address, signer, provider, chainId, balance, walletKind, connect, disconnect]);
+  const value = useMemo(() => ({ address, signer, provider, chainId, balance, walletKind, connect, disconnect, refreshWallet }),
+    [address, signer, provider, chainId, balance, walletKind, connect, disconnect, refreshWallet]);
 
   return <WalletCtx.Provider value={value}>{children}</WalletCtx.Provider>;
 }
