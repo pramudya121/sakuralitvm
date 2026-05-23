@@ -14,6 +14,7 @@ import {
 import { TOKENS, type TokenInfo } from "@/lib/tokens";
 import { TokenSelectButton } from "@/components/TokenSelectModal";
 import { toast } from "sonner";
+import { subscribeWeb3Sync } from "@/lib/web3/sync";
 
 export const Route = createFileRoute("/dex/liquidity")({
   component: LiquidityPage,
@@ -110,6 +111,8 @@ function AddLiq({ slippage }: { slippage: number }) {
     })();
     return () => { alive = false; };
   }, [address, bTokenAddr, tick]);
+
+  useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
 
   // AMM auto-quote: if pool has reserves, derive amtB from amtA
   const reserves = useMemo(() => {
@@ -263,6 +266,8 @@ function RemoveLiq({ slippage }: { slippage: number }) {
     })();
     return () => { alive = false; };
   }, [address, bAddr, tick]);
+
+  useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
 
   const lpBal = pool?.lpBalance ?? 0n;
   const lpBalEth = Number(formatEther(lpBal));
