@@ -10,6 +10,7 @@ import {
   findBestRoute, swapExactETHForTokens, swapExactTokensForETH, swapExactTokensForTokens,
   getNativeBalance, getTokenBalance, wrapNative, unwrapNative,
 } from "@/lib/web3/ethers";
+import { subscribeWeb3Sync } from "@/lib/web3/sync";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TOKENS, type TokenInfo } from "@/lib/tokens";
 import { TokenSelectButton } from "@/components/TokenSelectModal";
@@ -27,7 +28,7 @@ function tokenForAddr(addr: string): TokenInfo {
 }
 
 function Swap() {
-  const { signer, address } = useWallet();
+  const { signer, address, refreshWallet } = useWallet();
   const [from, setFrom] = useState<TokenInfo>(TOKENS[0]); // zkLTC native
   const [to, setTo] = useState<TokenInfo>(TOKENS[1]); // wzkLTC
   const [fromAmt, setFromAmt] = useState("");
@@ -38,6 +39,7 @@ function Swap() {
   const [route, setRoute] = useState<string[]>([]);
   const [balFrom, setBalFrom] = useState("0");
   const [balTo, setBalTo] = useState("0");
+  const [tick, setTick] = useState(0);
 
   const fromAddr = from.address === "native" ? CONTRACTS.weth : from.address;
   const toAddr = to.address === "native" ? CONTRACTS.weth : to.address;
@@ -62,7 +64,9 @@ function Swap() {
       } catch { if (alive) setBalTo("0"); }
     })();
     return () => { alive = false; };
-  }, [address, from, to]);
+  }, [address, from, to, tick]);
+
+  useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
 
   // quote (or 1:1 for wrap)
   useEffect(() => {
@@ -109,12 +113,14 @@ function Swap() {
         toast.loading("Wrapping...", { id: "swap" });
         await wrapNative(signer, fromAmt);
         toast.success(`Wrapped ${fromAmt} ${CHAIN.symbol} → wzkLTC`, { id: "swap" });
+        await refreshWallet();
         setFromAmt(""); setToAmt(""); return;
       }
       if (isUnwrap) {
         toast.loading("Unwrapping...", { id: "swap" });
         await unwrapNative(signer, fromAmt);
         toast.success(`Unwrapped ${fromAmt} wzkLTC → ${CHAIN.symbol}`, { id: "swap" });
+        await refreshWallet();
         setFromAmt(""); setToAmt(""); return;
       }
       if (!route.length) return;
@@ -128,6 +134,7 @@ function Swap() {
         await swapExactTokensForTokens(signer, amtIn, route, slippage);
       }
       toast.success("Swap complete!", { id: "swap" });
+      await refreshWallet();
       setFromAmt(""); setToAmt("");
     } catch (e: any) {
       toast.error(e?.shortMessage ?? e?.message ?? "Swap failed", { id: "swap" });

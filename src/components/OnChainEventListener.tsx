@@ -57,8 +57,15 @@ export function OnChainEventListener() {
       const txKey = `${ev?.log?.transactionHash}-offerMade-${tokenId}-${offerIdx}`;
       if (seen.has(txKey)) return;
       try {
-        const { nftRead } = await import("@/lib/web3/ethers");
-        const owner = String(await nftRead().ownerOf(tokenId)).toLowerCase();
+        let owner = "";
+        try {
+          const active = await mp.getActiveListing(CONTRACTS.nftCollection, tokenId);
+          if (active?.active) owner = String(active.seller).toLowerCase();
+        } catch {}
+        if (!owner) {
+          const { nftRead } = await import("@/lib/web3/ethers");
+          owner = String(await nftRead().ownerOf(tokenId)).toLowerCase();
+        }
         if (owner === me && offerer.toLowerCase() !== me) {
           await pushNotification(me, "offer", "💎 New offer received",
             `${formatEther(value)} ${CHAIN.symbol} offered on NFT #${tokenId}`, tokenId, `/marketplace/${tokenId}`);

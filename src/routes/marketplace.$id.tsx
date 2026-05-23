@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useNFTViews, pushNotification } from "@/lib/supabase-hooks";
 import { LikeButton, CommentsPanel } from "@/components/NFTSocial";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
+import { emitWeb3Sync } from "@/lib/web3/sync";
 
 export const Route = createFileRoute("/marketplace/$id")({
   component: NFTDetail,
@@ -114,7 +115,10 @@ function NFTDetail() {
           {listing && !isOwner && (
             <Button size="lg" className="w-full rounded-full shadow-lg" onClick={() => wrap("buy",
               () => buyNFT(signer, listing.listingId, listing.price),
-              () => pushNotification(listing.seller, "sale", "🎉 Your NFT was sold!", `${nft.name} sold for ${listing.priceEth} ${CHAIN.symbol}`, nft.tokenId, `/marketplace/${id}`),
+              () => {
+                pushNotification(listing.seller, "sale", "🎉 Your NFT was sold!", `${nft.name} sold for ${listing.priceEth} ${CHAIN.symbol}`, nft.tokenId, `/marketplace/${id}`);
+                emitWeb3Sync("buy-nft-detail");
+              },
             )}>
               <ShoppingCart className="w-4 h-4 mr-2" /> Buy Now for {listing.priceEth} {CHAIN.symbol}
             </Button>
@@ -222,7 +226,13 @@ function NFTDetail() {
                     <span className="font-bold text-primary">{o.valueEth} {CHAIN.symbol}</span>
                     {o.active && isOwner && <Button size="sm" onClick={() => wrap("acc",
                       () => acceptOfferAuto(signer, nft.tokenId, o.idx, listing?.listingId),
-                      () => pushNotification(o.offerer, "offer_accepted", "✅ Offer accepted!", `Your offer of ${o.valueEth} ${CHAIN.symbol} on ${nft.name} was accepted`, nft.tokenId, `/marketplace/${id}`),
+                      () => {
+                        pushNotification(o.offerer, "offer_accepted", "✅ Offer accepted!", `Your offer of ${o.valueEth} ${CHAIN.symbol} on ${nft.name} was accepted`, nft.tokenId, `/marketplace/${id}`);
+                        if (address) {
+                          pushNotification(address, "sale", "🎉 NFT terjual lewat offer", `${nft.name} berhasil dijual seharga ${o.valueEth} ${CHAIN.symbol}`, nft.tokenId, `/marketplace/${id}`);
+                        }
+                        emitWeb3Sync("accept-offer-detail");
+                      },
                     )}><Check className="w-3 h-3 mr-1" /> Accept</Button>}
                     {o.active && address?.toLowerCase() === o.offerer.toLowerCase() && (
                       <Button size="sm" variant="outline" onClick={() => wrap("co", () => cancelOffer(signer, nft.tokenId, o.idx))}><X className="w-3 h-3" /></Button>

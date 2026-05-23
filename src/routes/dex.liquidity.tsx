@@ -14,6 +14,7 @@ import {
 import { TOKENS, type TokenInfo } from "@/lib/tokens";
 import { TokenSelectButton } from "@/components/TokenSelectModal";
 import { toast } from "sonner";
+import { subscribeWeb3Sync } from "@/lib/web3/sync";
 
 export const Route = createFileRoute("/dex/liquidity")({
   component: LiquidityPage,
@@ -74,7 +75,7 @@ function NativeTokenBadge({ value }: { value: TokenInfo }) {
 }
 
 function AddLiq({ slippage }: { slippage: number }) {
-  const { signer, address } = useWallet();
+  const { signer, address, refreshWallet } = useWallet();
   const [tokenA] = useState<TokenInfo>(NATIVE); // native zkLTC
   const [tokenB, setTokenB] = useState<TokenInfo>(TOKENS[1]); // WETH default
   const [amtA, setAmtA] = useState("");
@@ -111,6 +112,8 @@ function AddLiq({ slippage }: { slippage: number }) {
     return () => { alive = false; };
   }, [address, bTokenAddr, tick]);
 
+  useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
+
   // AMM auto-quote: if pool has reserves, derive amtB from amtA
   const reserves = useMemo(() => {
     if (!pool || !pool.pair) return null;
@@ -142,6 +145,7 @@ function AddLiq({ slippage }: { slippage: number }) {
       toast.loading("Approving & adding liquidity...", { id: "add" });
       await addLiquidityETH(signer, bTokenAddr, parseEther(amtB), amtA, slippage);
       toast.success("Liquidity added!", { id: "add" });
+      await refreshWallet();
       setAmtA(""); setAmtB(""); setTick((t) => t + 1);
     } catch (e: any) {
       toast.error(e?.shortMessage ?? e?.message ?? "Failed", { id: "add" });
@@ -244,7 +248,7 @@ function AddLiq({ slippage }: { slippage: number }) {
 }
 
 function RemoveLiq({ slippage }: { slippage: number }) {
-  const { signer, address } = useWallet();
+  const { signer, address, refreshWallet } = useWallet();
   const [tokenB, setTokenB] = useState<TokenInfo>(TOKENS[1]);
   const [pct, setPct] = useState(0);
   const [pool, setPool] = useState<Awaited<ReturnType<typeof getPairInfo>> | null>(null);
@@ -262,6 +266,8 @@ function RemoveLiq({ slippage }: { slippage: number }) {
     })();
     return () => { alive = false; };
   }, [address, bAddr, tick]);
+
+  useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
 
   const lpBal = pool?.lpBalance ?? 0n;
   const lpBalEth = Number(formatEther(lpBal));
@@ -286,6 +292,7 @@ function RemoveLiq({ slippage }: { slippage: number }) {
       const lAmt = parseEther(removeAmt.toString());
       await removeLiquidityETH(signer, bAddr, lAmt, pool.pair);
       toast.success("Liquidity removed!", { id: "rm" });
+      await refreshWallet();
       setPct(0); setTick((t) => t + 1);
     } catch (e: any) {
       toast.error(e?.shortMessage ?? e?.message ?? "Failed", { id: "rm" });

@@ -33,7 +33,7 @@ function Marketplace() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
   const [maxPrice, setMaxPrice] = useState(100);
-  const [onlyListed, setOnlyListed] = useState("all");
+  const [onlyListed, setOnlyListed] = useState("listed");
   const [view, setView] = useState<"grid" | "list">("grid");
 
   const stats = useMemo(() => {
@@ -46,6 +46,7 @@ function Marketplace() {
 
   const items = useMemo(() => {
     let arr = nfts.map((n) => ({ nft: n, listing: listings.find((l) => l.tokenId === n.tokenId) }));
+    if (onlyListed === "all") arr = arr.filter((x) => !!x.listing);
     if (onlyListed === "listed") arr = arr.filter((x) => x.listing);
     if (onlyListed === "unlisted") arr = arr.filter((x) => !x.listing);
     if (search) arr = arr.filter((x) => x.nft.name.toLowerCase().includes(search.toLowerCase()) || x.nft.tokenId.toString().includes(search));
@@ -112,7 +113,7 @@ function Marketplace() {
         <Select value={onlyListed} onValueChange={setOnlyListed}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All NFTs</SelectItem>
+            <SelectItem value="all">All Listed NFTs</SelectItem>
             <SelectItem value="listed">Listed only</SelectItem>
             <SelectItem value="unlisted">Unlisted only</SelectItem>
           </SelectContent>
