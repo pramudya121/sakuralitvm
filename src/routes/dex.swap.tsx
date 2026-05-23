@@ -10,6 +10,7 @@ import {
   findBestRoute, swapExactETHForTokens, swapExactTokensForETH, swapExactTokensForTokens,
   getNativeBalance, getTokenBalance, wrapNative, unwrapNative,
 } from "@/lib/web3/ethers";
+import { subscribeWeb3Sync } from "@/lib/web3/sync";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TOKENS, type TokenInfo } from "@/lib/tokens";
 import { TokenSelectButton } from "@/components/TokenSelectModal";
@@ -38,6 +39,7 @@ function Swap() {
   const [route, setRoute] = useState<string[]>([]);
   const [balFrom, setBalFrom] = useState("0");
   const [balTo, setBalTo] = useState("0");
+  const [tick, setTick] = useState(0);
 
   const fromAddr = from.address === "native" ? CONTRACTS.weth : from.address;
   const toAddr = to.address === "native" ? CONTRACTS.weth : to.address;
@@ -62,7 +64,9 @@ function Swap() {
       } catch { if (alive) setBalTo("0"); }
     })();
     return () => { alive = false; };
-  }, [address, from, to]);
+  }, [address, from, to, tick]);
+
+  useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
 
   // quote (or 1:1 for wrap)
   useEffect(() => {
