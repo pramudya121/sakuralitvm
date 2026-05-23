@@ -27,7 +27,7 @@ function tokenForAddr(addr: string): TokenInfo {
 }
 
 function Swap() {
-  const { signer, address } = useWallet();
+  const { signer, address, refreshWallet } = useWallet();
   const [from, setFrom] = useState<TokenInfo>(TOKENS[0]); // zkLTC native
   const [to, setTo] = useState<TokenInfo>(TOKENS[1]); // wzkLTC
   const [fromAmt, setFromAmt] = useState("");
@@ -109,12 +109,14 @@ function Swap() {
         toast.loading("Wrapping...", { id: "swap" });
         await wrapNative(signer, fromAmt);
         toast.success(`Wrapped ${fromAmt} ${CHAIN.symbol} → wzkLTC`, { id: "swap" });
+        await refreshWallet();
         setFromAmt(""); setToAmt(""); return;
       }
       if (isUnwrap) {
         toast.loading("Unwrapping...", { id: "swap" });
         await unwrapNative(signer, fromAmt);
         toast.success(`Unwrapped ${fromAmt} wzkLTC → ${CHAIN.symbol}`, { id: "swap" });
+        await refreshWallet();
         setFromAmt(""); setToAmt(""); return;
       }
       if (!route.length) return;
@@ -128,6 +130,7 @@ function Swap() {
         await swapExactTokensForTokens(signer, amtIn, route, slippage);
       }
       toast.success("Swap complete!", { id: "swap" });
+      await refreshWallet();
       setFromAmt(""); setToAmt("");
     } catch (e: any) {
       toast.error(e?.shortMessage ?? e?.message ?? "Swap failed", { id: "swap" });
