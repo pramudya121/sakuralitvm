@@ -190,8 +190,7 @@ export async function getMarketplaceFeeInfo() {
 
 export async function makeOffer(signer: any, tokenId: bigint | number, priceEth: string) {
   const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
-  const tx = await c.makeOffer(CONTRACTS.nftCollection, tokenId, { value: parseEther(priceEth) });
-  return tx.wait();
+  return waitAndSync(c.makeOffer(CONTRACTS.nftCollection, tokenId, { value: parseEther(priceEth) }), "make-offer");
 }
 
 export async function acceptOffer(signer: any, tokenId: bigint | number, offerIdx: bigint | number) {
@@ -205,8 +204,7 @@ export async function acceptOffer(signer: any, tokenId: bigint | number, offerId
     }
   } catch { /* if getApproved/approve fail (e.g. not owner) bubble up below */ }
   const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
-  const tx = await c.acceptOffer(CONTRACTS.nftCollection, tokenId, offerIdx);
-  return tx.wait();
+  return waitAndSync(c.acceptOffer(CONTRACTS.nftCollection, tokenId, offerIdx), "accept-offer");
 }
 
 // Accept an offer even when the NFT is currently listed: cancel listing first, then accept.
@@ -220,21 +218,20 @@ export async function acceptOfferAuto(
     const mp = new Contract(CONTRACTS.marketplace, MARKETPLACE_ABI, signer);
     const tx1 = await mp.cancelListing(listingId);
     await tx1.wait();
+    emitWeb3Sync("cancel-listing-for-offer");
   }
   return acceptOffer(signer, tokenId, offerIdx);
 }
 
 export async function cancelOffer(signer: any, tokenId: bigint | number, offerIdx: bigint | number) {
   const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
-  const tx = await c.cancelOffer(CONTRACTS.nftCollection, tokenId, offerIdx);
-  return tx.wait();
+  return waitAndSync(c.cancelOffer(CONTRACTS.nftCollection, tokenId, offerIdx), "cancel-offer");
 }
 
 // ---------- DEX ----------
 export async function wrapEth(signer: any, amountEth: string) {
   const weth = new Contract(CONTRACTS.weth, ERC20_ABI, signer);
-  const tx = await weth.deposit({ value: parseEther(amountEth) });
-  return tx.wait();
+  return waitAndSync(weth.deposit({ value: parseEther(amountEth) }), "wrap-eth");
 }
 
 export async function approveToken(signer: any, token: string, spender: string, amount: bigint) {
@@ -261,8 +258,7 @@ export async function swapExactETHForTokens(signer: any, tokenOut: string, amoun
   const minOut = minOutWithSlippage(amounts[amounts.length - 1], slippagePct);
   const to = await signer.getAddress();
   const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-  const tx = await router.swapExactETHForTokens(minOut, path, to, deadline, { value: amountIn });
-  return tx.wait();
+  return waitAndSync(router.swapExactETHForTokens(minOut, path, to, deadline, { value: amountIn }), "swap-eth-for-token");
 }
 
 export async function swapExactTokensForETH(signer: any, tokenIn: string, amountIn: bigint, slippagePct = 1) {
@@ -273,8 +269,7 @@ export async function swapExactTokensForETH(signer: any, tokenIn: string, amount
   const minOut = minOutWithSlippage(amounts[amounts.length - 1], slippagePct);
   const to = await signer.getAddress();
   const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-  const tx = await router.swapExactTokensForETH(amountIn, minOut, path, to, deadline);
-  return tx.wait();
+  return waitAndSync(router.swapExactTokensForETH(amountIn, minOut, path, to, deadline), "swap-token-for-eth");
 }
 
 /** Multi-hop swap with a custom path (smart routing). */
@@ -286,8 +281,7 @@ export async function swapExactTokensForTokens(signer: any, amountIn: bigint, pa
   const minOut = minOutWithSlippage(amounts[amounts.length - 1], slippagePct);
   const to = await signer.getAddress();
   const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-  const tx = await router.swapExactTokensForTokens(amountIn, minOut, path, to, deadline);
-  return tx.wait();
+  return waitAndSync(router.swapExactTokensForTokens(amountIn, minOut, path, to, deadline), "swap-token-for-token");
 }
 
 
@@ -358,8 +352,7 @@ export async function addLiquidityETH(signer: any, token: string, tokenAmount: b
   const ethAmount = parseEther(ethAmountEth);
   const minToken = minOutWithSlippage(tokenAmount, slippagePct);
   const minEth = minOutWithSlippage(ethAmount, slippagePct);
-  const tx = await router.addLiquidityETH(token, tokenAmount, minToken, minEth, to, deadline, { value: ethAmount });
-  return tx.wait();
+  return waitAndSync(router.addLiquidityETH(token, tokenAmount, minToken, minEth, to, deadline, { value: ethAmount }), "add-liquidity");
 }
 
 export async function removeLiquidityETH(signer: any, token: string, liquidity: bigint, pairAddr: string, minTokenOut: bigint = 0n, minEthOut: bigint = 0n) {
@@ -368,19 +361,16 @@ export async function removeLiquidityETH(signer: any, token: string, liquidity: 
   const router = new Contract(CONTRACTS.router, ROUTER_ABI, signer);
   const to = await signer.getAddress();
   const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-  const tx = await router.removeLiquidityETH(token, liquidity, minTokenOut, minEthOut, to, deadline);
-  return tx.wait();
+  return waitAndSync(router.removeLiquidityETH(token, liquidity, minTokenOut, minEthOut, to, deadline), "remove-liquidity");
 }
 
 // Send native zkLTC or ERC20 token (amount as decimal string)
 export async function sendToken(signer: any, tokenAddress: string | "native", to: string, amountEth: string) {
   if (tokenAddress === "native") {
-    const tx = await signer.sendTransaction({ to, value: parseEther(amountEth) });
-    return tx.wait();
+    return waitAndSync(signer.sendTransaction({ to, value: parseEther(amountEth) }), "send-native");
   }
   const c = new Contract(tokenAddress, ERC20_ABI, signer);
-  const tx = await c.transfer(to, parseEther(amountEth));
-  return tx.wait();
+  return waitAndSync(c.transfer(to, parseEther(amountEth)), "send-token");
 }
 
 // ---------- helpers ----------
