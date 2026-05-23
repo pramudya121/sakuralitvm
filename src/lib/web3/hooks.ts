@@ -31,12 +31,24 @@ export function useAllNFTs() {
     (async () => {
       try {
         const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, readProvider);
+        const mp = new Contract(CONTRACTS.marketplace, MARKETPLACE_ABI, readProvider);
         const total: bigint = await nft.totalMinted();
+        const listingCount: bigint = await mp.listingCount().catch(() => 0n);
+        const activeSellers = new Map<string, string>();
+        for (let i = 1n; i <= listingCount; i++) {
+          try {
+            const row = await mp.listings(i);
+            if (row.active) {
+              activeSellers.set(String(row.tokenId), String(row.seller));
+            }
+          } catch {}
+        }
         const items: NFTMeta[] = [];
         for (let i = 1n; i <= total; i++) {
           try {
-            const [uri, owner] = await Promise.all([nft.tokenURI(i), nft.ownerOf(i)]);
+            const [uri, ownerOnChain] = await Promise.all([nft.tokenURI(i), nft.ownerOf(i)]);
             const meta = decodeTokenUri(uri) ?? {};
+            const owner = activeSellers.get(i.toString()) ?? ownerOnChain;
             items.push({
               tokenId: i, owner, tokenURI: uri,
               name: meta.name ?? `NFT #${i}`,
