@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { BrowserProvider, formatEther } from "ethers";
 import { connectWallet, pickProvider, type WalletKind } from "@/lib/web3/ethers";
 import { CHAIN } from "@/lib/web3/contracts";
+import { subscribeWeb3Sync } from "@/lib/web3/sync";
 
 type Ctx = {
   address: string | null;
@@ -71,6 +72,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     inj.on("chainChanged", handleChain);
     return () => { try { inj.removeListener("accountsChanged", handleAccts); inj.removeListener("chainChanged", handleChain); } catch {} };
   }, [connect, disconnect]);
+
+  useEffect(() => subscribeWeb3Sync(() => { refreshWallet().catch(() => {}); }), [refreshWallet]);
 
   const value = useMemo(() => ({ address, signer, provider, chainId, balance, walletKind, connect, disconnect, refreshWallet }),
     [address, signer, provider, chainId, balance, walletKind, connect, disconnect, refreshWallet]);
