@@ -8,6 +8,7 @@ import { useAllNFTs, useAllListings } from "@/lib/web3/hooks";
 import { CONTRACTS, OFFER_ABI, CHAIN } from "@/lib/web3/contracts";
 import { readProvider, acceptOfferAuto, shortAddr } from "@/lib/web3/ethers";
 import { pushNotification } from "@/lib/supabase-hooks";
+import { emitWeb3Sync } from "@/lib/web3/sync";
 import { toast } from "sonner";
 
 type OfferRow = {
@@ -99,6 +100,15 @@ export function MyNFTOffers() {
         o.tokenId,
         `/marketplace/${o.tokenId.toString()}`,
       );
+      pushNotification(
+        address!,
+        "sale",
+        "🎉 Offer berhasil diterima",
+        `${o.nftName} terjual lewat offer ${o.valueEth} ${CHAIN.symbol}`,
+        o.tokenId,
+        `/marketplace/${o.tokenId.toString()}`,
+      );
+      emitWeb3Sync("accept-offer-profile");
       setReloadKey((k) => k + 1);
     } catch (e: any) {
       toast.error(e?.shortMessage ?? e?.message ?? "Failed", {
