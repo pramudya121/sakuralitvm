@@ -63,6 +63,10 @@ export function useAllNFTs() {
   }, [tick]);
 
   useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((v) => v + 1), 12000);
+    return () => window.clearInterval(id);
+  }, []);
   return { nfts, loading };
 }
 
@@ -94,6 +98,10 @@ export function useAllListings() {
   }, [tick]);
 
   useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((v) => v + 1), 12000);
+    return () => window.clearInterval(id);
+  }, []);
   return { listings, loading };
 }
 
@@ -138,6 +146,10 @@ export function useNFT(tokenId: string | undefined) {
   }, [tokenId, tick]);
 
   useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((v) => v + 1), 12000);
+    return () => window.clearInterval(id);
+  }, []);
   return { nft, listing, loading };
 }
 
@@ -161,6 +173,10 @@ export function useOffers(tokenId: string | undefined) {
   }, [tokenId, tick]);
 
   useEffect(() => subscribeWeb3Sync(() => setTick((v) => v + 1)), []);
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((v) => v + 1), 12000);
+    return () => window.clearInterval(id);
+  }, []);
   return offers;
 }
 
