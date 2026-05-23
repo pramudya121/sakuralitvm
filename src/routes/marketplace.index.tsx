@@ -45,9 +45,8 @@ function Marketplace() {
   }, [nfts, listings]);
 
   const items = useMemo(() => {
-    let arr = nfts
-      .map((n) => ({ nft: n, listing: listings.find((l) => l.tokenId === n.tokenId) }))
-      .filter((x) => !!x.listing);
+    let arr = nfts.map((n) => ({ nft: n, listing: listings.find((l) => l.tokenId === n.tokenId) }));
+    if (onlyListed === "all") arr = arr.filter((x) => !!x.listing);
     if (onlyListed === "listed") arr = arr.filter((x) => x.listing);
     if (onlyListed === "unlisted") arr = arr.filter((x) => !x.listing);
     if (search) arr = arr.filter((x) => x.nft.name.toLowerCase().includes(search.toLowerCase()) || x.nft.tokenId.toString().includes(search));
