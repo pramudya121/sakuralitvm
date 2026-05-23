@@ -107,13 +107,22 @@ export function useNotifications(address?: string | null) {
   useEffect(() => {
     load();
     if (!address) return;
+    const wallet = address.toLowerCase();
     const channel = supabase
-      .channel(`notif-${address}`)
+      .channel(`notif-${wallet}`)
       .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "notifications",
-        filter: `wallet_address=eq.${address.toLowerCase()}`,
+        event: "*", schema: "public", table: "notifications",
+        filter: `wallet_address=eq.${wallet}`,
       }, (payload) => {
-        setList((prev) => [payload.new as Notification, ...prev]);
+        if (payload.eventType === "INSERT") {
+          setList((prev) => [payload.new as Notification, ...prev.filter((n) => n.id !== payload.new.id)]);
+          return;
+        }
+        if (payload.eventType === "UPDATE") {
+          setList((prev) => prev.map((n) => n.id === payload.new.id ? payload.new as Notification : n));
+          return;
+        }
+        load();
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
