@@ -16,7 +16,9 @@ export const CONTRACTS = {
   factory: "0x5687FDA3BdE14d38057699c402606ab470EcA873",
   weth: "0x4Fd3765cde8D1d2BE4EdbaA03940AfC56794c304",
   router: "0xd28967D75750f477E450Df81C73f34E2713B86B4",
+  autonomous: "0xbE50e133A3d0E2eD5581987D62da649d64e202C5",
 };
+
 
 export const MARKETPLACE_ABI = [
   "function buyNFT(uint256 listingId) payable",
@@ -40,6 +42,8 @@ export const NFT_ABI = [
   "function balanceOf(address account) view returns (uint256)",
   "function approve(address to, uint256 tokenId)",
   "function getApproved(uint256 tokenId) view returns (address)",
+  "function setApprovalForAll(address operator, bool approved)",
+  "function isApprovedForAll(address owner, address operator) view returns (bool)",
   "function transferFrom(address from, address to, uint256 tokenId)",
   "function totalMinted() view returns (uint256)",
   "function name() view returns (string)",
@@ -47,6 +51,29 @@ export const NFT_ABI = [
   "event Minted(address indexed to, uint256 indexed tokenId, string tokenURI)",
   "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
 ];
+
+export const AUTONOMOUS_ABI = [
+  "function list(address nft, uint256 tokenId, uint256 price)",
+  "function delist(address nft, uint256 tokenId)",
+  "function buyNow(address nft, uint256 tokenId) payable",
+  "function placeBid(address nft, uint256 tokenId) payable",
+  "function cancelBid(address nft, uint256 tokenId)",
+  "function acceptBid(address nft, uint256 tokenId)",
+  "function withdraw()",
+  "function feeBps() view returns (uint256)",
+  "function paused() view returns (bool)",
+  "function pendingWithdrawals(address) view returns (uint256)",
+  "function getListing(address nft, uint256 tokenId) view returns (tuple(address seller, uint256 price, bool active))",
+  "function getBid(address nft, uint256 tokenId) view returns (tuple(address bidder, uint256 bidPrice, bool active))",
+  "event Listed(address indexed nft, uint256 indexed tokenId, address indexed seller, uint256 price)",
+  "event Delisted(address indexed nft, uint256 indexed tokenId, address indexed seller)",
+  "event Bought(address indexed nft, uint256 indexed tokenId, address indexed buyer, address seller, uint256 price, uint256 fee)",
+  "event BidPlaced(address indexed nft, uint256 indexed tokenId, address indexed bidder, uint256 price)",
+  "event BidCancelled(address indexed nft, uint256 indexed tokenId, address indexed bidder)",
+  "event BidClaimed(address indexed nft, uint256 indexed tokenId, address seller, address bidder, uint256 price, uint256 fee)",
+  "event PendingWithdraw(address indexed user, uint256 amount)",
+];
+
 
 export const OFFER_ABI = [
   "function makeOffer(address nft, uint256 tokenId) payable",

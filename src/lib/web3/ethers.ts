@@ -1,5 +1,6 @@
 import { BrowserProvider, Contract, JsonRpcProvider, Network, parseEther, formatEther, type Eip1193Provider } from "ethers";
-import { CHAIN, CONTRACTS, MARKETPLACE_ABI, NFT_ABI, OFFER_ABI, ROUTER_ABI, FACTORY_ABI, ERC20_ABI, PAIR_ABI } from "./contracts";
+import { CHAIN, CONTRACTS, MARKETPLACE_ABI, NFT_ABI, OFFER_ABI, ROUTER_ABI, FACTORY_ABI, ERC20_ABI, PAIR_ABI, AUTONOMOUS_ABI } from "./contracts";
+
 import { emitWeb3Sync } from "./sync";
 
 declare global {
@@ -194,15 +195,24 @@ export async function makeOffer(signer: any, tokenId: bigint | number, priceEth:
 }
 
 export async function acceptOffer(signer: any, tokenId: bigint | number, offerIdx: bigint | number) {
-  // Offer contract uses transferFrom — requires NFT approval (per-token or operator).
+  // Use operator approval — more robust than per-token approve which gets cleared on every transfer.
+  const me = (await signer.getAddress()).toLowerCase();
   const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, signer);
-  try {
-    const approved = await nft.getApproved(tokenId);
-    if (!approved || approved.toLowerCase() !== CONTRACTS.offer.toLowerCase()) {
-      const txA = await nft.approve(CONTRACTS.offer, tokenId);
-      await txA.wait();
-    }
-  } catch { /* if getApproved/approve fail (e.g. not owner) bubble up below */ }
+
+  // Sanity: confirm signer actually owns the token now (after any prior cancel-listing tx).
+  const onChainOwner: string = await nft.ownerOf(tokenId);
+  if (onChainOwner.toLowerCase() !== me) {
+    throw new Error(
+      `NFT belum kembali ke wallet kamu (owner: ${onChainOwner.slice(0, 8)}...). Coba refresh sebentar lalu Accept lagi.`,
+    );
+  }
+
+  const isOp: boolean = await nft.isApprovedForAll(me, CONTRACTS.offer).catch(() => false);
+  if (!isOp) {
+    const txA = await nft.setApprovalForAll(CONTRACTS.offer, true);
+    await txA.wait();
+  }
+
   const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
   return waitAndSync(c.acceptOffer(CONTRACTS.nftCollection, tokenId, offerIdx), "accept-offer");
 }
@@ -214,14 +224,30 @@ export async function acceptOfferAuto(
   offerIdx: bigint | number,
   listingId?: bigint | number | null,
 ) {
-  if (listingId !== undefined && listingId !== null) {
+  const me = (await signer.getAddress()).toLowerCase();
+  const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, signer);
+  const currentOwner: string = await nft.ownerOf(tokenId);
+
+  // Cancel only if the marketplace still escrows this NFT.
+  if (
+    listingId !== undefined && listingId !== null &&
+    currentOwner.toLowerCase() === CONTRACTS.marketplace.toLowerCase()
+  ) {
     const mp = new Contract(CONTRACTS.marketplace, MARKETPLACE_ABI, signer);
     const tx1 = await mp.cancelListing(listingId);
     await tx1.wait();
     emitWeb3Sync("cancel-listing-for-offer");
+
+    // Poll until ownerOf reverts to the seller — RPC may lag a block.
+    for (let i = 0; i < 10; i++) {
+      const o: string = await nft.ownerOf(tokenId).catch(() => "");
+      if (o.toLowerCase() === me) break;
+      await new Promise((r) => setTimeout(r, 800));
+    }
   }
   return acceptOffer(signer, tokenId, offerIdx);
 }
+
 
 export async function cancelOffer(signer: any, tokenId: bigint | number, offerIdx: bigint | number) {
   const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
@@ -373,7 +399,76 @@ export async function sendToken(signer: any, tokenAddress: string | "native", to
   return waitAndSync(c.transfer(to, parseEther(amountEth)), "send-token");
 }
 
-// ---------- helpers ----------
+// ---------- Autonomous Settlement Agent ----------
+export const autonomousRead = () => new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, readProvider);
+
+async function ensureNftOperator(signer: any, operator: string) {
+  const me = await signer.getAddress();
+  const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, signer);
+  const ok: boolean = await nft.isApprovedForAll(me, operator).catch(() => false);
+  if (!ok) {
+    const tx = await nft.setApprovalForAll(operator, true);
+    await tx.wait();
+  }
+}
+
+export async function asaList(signer: any, tokenId: bigint | number, priceEth: string) {
+  await ensureNftOperator(signer, CONTRACTS.autonomous);
+  const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
+  return waitAndSync(c.list(CONTRACTS.nftCollection, tokenId, parseEther(priceEth)), "asa-list");
+}
+
+export async function asaDelist(signer: any, tokenId: bigint | number) {
+  const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
+  return waitAndSync(c.delist(CONTRACTS.nftCollection, tokenId), "asa-delist");
+}
+
+export async function asaBuyNow(signer: any, tokenId: bigint | number, priceWei: bigint) {
+  const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
+  return waitAndSync(c.buyNow(CONTRACTS.nftCollection, tokenId, { value: priceWei }), "asa-buy");
+}
+
+export async function asaPlaceBid(signer: any, tokenId: bigint | number, priceEth: string) {
+  const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
+  return waitAndSync(c.placeBid(CONTRACTS.nftCollection, tokenId, { value: parseEther(priceEth) }), "asa-bid");
+}
+
+export async function asaCancelBid(signer: any, tokenId: bigint | number) {
+  const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
+  return waitAndSync(c.cancelBid(CONTRACTS.nftCollection, tokenId), "asa-cancel-bid");
+}
+
+export async function asaAcceptBid(signer: any, tokenId: bigint | number) {
+  await ensureNftOperator(signer, CONTRACTS.autonomous);
+  const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
+  return waitAndSync(c.acceptBid(CONTRACTS.nftCollection, tokenId), "asa-accept-bid");
+}
+
+export async function asaWithdraw(signer: any) {
+  const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
+  return waitAndSync(c.withdraw(), "asa-withdraw");
+}
+
+export async function asaGetListing(tokenId: bigint | number) {
+  const r = await autonomousRead().getListing(CONTRACTS.nftCollection, tokenId);
+  return { seller: String(r[0]), price: r[1] as bigint, active: Boolean(r[2]) };
+}
+
+export async function asaGetBid(tokenId: bigint | number) {
+  const r = await autonomousRead().getBid(CONTRACTS.nftCollection, tokenId);
+  return { bidder: String(r[0]), bidPrice: r[1] as bigint, active: Boolean(r[2]) };
+}
+
+export async function asaPendingWithdraw(owner: string): Promise<bigint> {
+  return (await autonomousRead().pendingWithdrawals(owner)) as bigint;
+}
+
+export async function asaFeeBps(): Promise<number> {
+  const v = await autonomousRead().feeBps().catch(() => 0n);
+  return Number(v);
+}
+
+
 export function fileToDataUrl(file: File): Promise<string> {
   return new Promise((res, rej) => {
     const r = new FileReader();

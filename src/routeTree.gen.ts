@@ -16,6 +16,7 @@ import { Route as MintRouteImport } from './routes/mint'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DexRouteImport } from './routes/dex'
 import { Route as CollectionsRouteImport } from './routes/collections'
+import { Route as AuctionRouteImport } from './routes/auction'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
@@ -60,6 +61,11 @@ const DexRoute = DexRouteImport.update({
 const CollectionsRoute = CollectionsRouteImport.update({
   id: '/collections',
   path: '/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuctionRoute = AuctionRouteImport.update({
+  id: '/auction',
+  path: '/auction',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
+  '/auction': typeof AuctionRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/dex': typeof DexRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
+  '/auction': typeof AuctionRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/mint': typeof MintRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
+  '/auction': typeof AuctionRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/dex': typeof DexRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/analytics'
+    | '/auction'
     | '/collections'
     | '/dex'
     | '/leaderboard'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/analytics'
+    | '/auction'
     | '/collections'
     | '/leaderboard'
     | '/mint'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/analytics'
+    | '/auction'
     | '/collections'
     | '/dex'
     | '/leaderboard'
@@ -233,6 +245,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  AuctionRoute: typeof AuctionRoute
   CollectionsRoute: typeof CollectionsRouteWithChildren
   DexRoute: typeof DexRouteWithChildren
   LeaderboardRoute: typeof LeaderboardRoute
@@ -294,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/collections'
       fullPath: '/collections'
       preLoaderRoute: typeof CollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auction': {
+      id: '/auction'
+      path: '/auction'
+      fullPath: '/auction'
+      preLoaderRoute: typeof AuctionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analytics': {
@@ -399,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
   AnalyticsRoute: AnalyticsRoute,
+  AuctionRoute: AuctionRoute,
   CollectionsRoute: CollectionsRouteWithChildren,
   DexRoute: DexRouteWithChildren,
   LeaderboardRoute: LeaderboardRoute,

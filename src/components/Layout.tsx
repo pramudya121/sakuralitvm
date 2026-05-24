@@ -4,22 +4,24 @@ import { WalletButton } from "./WalletButton";
 import { NotificationBell } from "./NotificationBell";
 import { OnChainEventListener } from "./OnChainEventListener";
 import { ThemeToggle } from "./ThemeToggle";
-import { Home, Store, Plus, Activity, Trophy, BarChart3, User, Heart, Repeat, Layers } from "lucide-react";
+import { Home, Store, Plus, Activity, Trophy, BarChart3, User, Heart, Repeat, Layers, Gavel } from "lucide-react";
 import sakuraLogo from "@/assets/sakura-logo.png";
 import { AIChatWidget } from "./AIChatWidget";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/marketplace", label: "Marketplace", icon: Store },
+  { to: "/marketplace", label: "Market", icon: Store },
+  { to: "/auction", label: "Auction", icon: Gavel },
   { to: "/collections", label: "Collections", icon: Layers },
   { to: "/mint", label: "Mint", icon: Plus },
-  { to: "/activity", label: "Activity", icon: Activity },
-  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/watchlist", label: "Watchlist", icon: Heart },
   { to: "/dex", label: "DEX", icon: Repeat },
+  { to: "/activity", label: "Activity", icon: Activity },
+  { to: "/leaderboard", label: "Leaders", icon: Trophy },
+  { to: "/analytics", label: "Stats", icon: BarChart3 },
+  { to: "/watchlist", label: "Watch", icon: Heart },
   { to: "/profile", label: "Profile", icon: User },
 ];
+
 
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -36,13 +38,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <img src={sakuraLogo} alt="SakuraNFT" className="w-9 h-9 rounded-full shadow-lg group-hover:scale-110 transition-transform ring-1 ring-primary/40" />
               <span className="font-bold text-lg gradient-text hidden sm:inline">SakuraNFT</span>
             </Link>
-            <nav className="hidden xl:flex items-center gap-0.5 flex-1 justify-center min-w-0">
+            <nav className="hidden lg:flex items-center gap-0.5 flex-1 justify-center min-w-0">
               {navItems.map((n) => (
                 <Link
                   key={n.to}
                   to={n.to}
-                  className="px-2.5 py-1.5 rounded-full text-[13px] font-medium text-muted-foreground hover:text-primary hover:bg-accent/40 transition-all whitespace-nowrap"
-                  activeProps={{ className: "px-2.5 py-1.5 rounded-full text-[13px] font-medium text-primary bg-accent/60 whitespace-nowrap" }}
+                  className="px-2 py-1.5 rounded-full text-[12.5px] font-medium text-muted-foreground hover:text-primary hover:bg-accent/40 transition-all whitespace-nowrap"
+                  activeProps={{ className: "px-2 py-1.5 rounded-full text-[12.5px] font-medium text-primary bg-accent/60 whitespace-nowrap" }}
                 >
                   {n.label}
                 </Link>
@@ -55,7 +57,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           {/* tablet & mobile horizontally-scrollable nav */}
-          <nav className="xl:hidden flex overflow-x-auto gap-1 px-3 pb-2 scrollbar-hide">
+          <nav className="lg:hidden flex overflow-x-auto gap-1 px-3 pb-2 scrollbar-hide">
+
             {navItems.map((n) => {
               const Icon = n.icon;
               return (
