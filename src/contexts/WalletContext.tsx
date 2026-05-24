@@ -3,6 +3,20 @@ import { BrowserProvider, formatEther } from "ethers";
 import { connectWallet, pickProvider, type WalletKind } from "@/lib/web3/ethers";
 import { CHAIN } from "@/lib/web3/contracts";
 import { subscribeWeb3Sync } from "@/lib/web3/sync";
+import { supabase } from "@/integrations/supabase/client";
+
+// Attach the connected wallet as a header on every Supabase request so RLS
+// policies that scope rows by wallet (e.g. notifications) can authorize.
+function setSupabaseWalletHeader(wallet: string | null) {
+  try {
+    const rest: any = (supabase as any).rest;
+    if (rest?.headers) {
+      if (wallet) rest.headers["x-wallet-address"] = wallet.toLowerCase();
+      else delete rest.headers["x-wallet-address"];
+    }
+  } catch {}
+}
+
 
 type Ctx = {
   address: string | null;
@@ -74,6 +88,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }, [connect, disconnect]);
 
   useEffect(() => subscribeWeb3Sync(() => { refreshWallet().catch(() => {}); }), [refreshWallet]);
+
+  // Keep Supabase wallet header in sync with connected address
+  useEffect(() => { setSupabaseWalletHeader(address); }, [address]);
 
   const value = useMemo(() => ({ address, signer, provider, chainId, balance, walletKind, connect, disconnect, refreshWallet }),
     [address, signer, provider, chainId, balance, walletKind, connect, disconnect, refreshWallet]);
