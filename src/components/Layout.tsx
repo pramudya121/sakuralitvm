@@ -4,22 +4,24 @@ import { WalletButton } from "./WalletButton";
 import { NotificationBell } from "./NotificationBell";
 import { OnChainEventListener } from "./OnChainEventListener";
 import { ThemeToggle } from "./ThemeToggle";
-import { Home, Store, Plus, Activity, Trophy, BarChart3, User, Heart, Repeat, Layers } from "lucide-react";
+import { Home, Store, Plus, Activity, Trophy, BarChart3, User, Heart, Repeat, Layers, Gavel } from "lucide-react";
 import sakuraLogo from "@/assets/sakura-logo.png";
 import { AIChatWidget } from "./AIChatWidget";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/marketplace", label: "Marketplace", icon: Store },
+  { to: "/marketplace", label: "Market", icon: Store },
+  { to: "/auction", label: "Auction", icon: Gavel },
   { to: "/collections", label: "Collections", icon: Layers },
   { to: "/mint", label: "Mint", icon: Plus },
-  { to: "/activity", label: "Activity", icon: Activity },
-  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/watchlist", label: "Watchlist", icon: Heart },
   { to: "/dex", label: "DEX", icon: Repeat },
+  { to: "/activity", label: "Activity", icon: Activity },
+  { to: "/leaderboard", label: "Leaders", icon: Trophy },
+  { to: "/analytics", label: "Stats", icon: BarChart3 },
+  { to: "/watchlist", label: "Watch", icon: Heart },
   { to: "/profile", label: "Profile", icon: User },
 ];
+
 
 
 export function Layout({ children }: { children: React.ReactNode }) {
