@@ -13,6 +13,10 @@ export const generateNFTDescription = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI not configured");
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
+    const wallet = (getRequestHeader("x-wallet-address") ?? "").toLowerCase();
+    if (!/^0x[a-f0-9]{40}$/.test(wallet)) throw new Error("Connect your wallet to use AI features");
+
 
     const res = await fetch(LOVABLE_API_URL, {
       method: "POST",
@@ -42,6 +46,10 @@ export const generateNFTImage = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI not configured");
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
+    const wallet = (getRequestHeader("x-wallet-address") ?? "").toLowerCase();
+    if (!/^0x[a-f0-9]{40}$/.test(wallet)) throw new Error("Connect your wallet to use AI features");
+
 
     const res = await fetch(LOVABLE_API_URL, {
       method: "POST",
