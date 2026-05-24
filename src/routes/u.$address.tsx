@@ -52,7 +52,7 @@ function PublicProfile() {
             <p className="mt-2 text-sm max-w-xl">{profile?.bio || "No bio yet."}</p>
             <div className="flex gap-3 mt-3 justify-center md:justify-start">
               {profile?.twitter && <a href={`https://twitter.com/${profile.twitter}`} target="_blank" rel="noopener" className="text-muted-foreground hover:text-primary"><Twitter className="w-4 h-4" /></a>}
-              {profile?.website && <a href={profile.website} target="_blank" rel="noopener" className="text-muted-foreground hover:text-primary"><Globe className="w-4 h-4" /></a>}
+              {(() => { try { const u = profile?.website ? new URL(profile.website) : null; return u && (u.protocol === "http:" || u.protocol === "https:") ? <a href={u.toString()} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Globe className="w-4 h-4" /></a> : null; } catch { return null; } })()}
             </div>
           </div>
         </div>
