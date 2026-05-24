@@ -240,7 +240,10 @@ function EditDialog({ profile, onSave }: { profile: DBProfile | null; onSave: (p
           <Textarea placeholder="Bio" value={draft.bio ?? ""} onChange={(e) => setDraft({ ...draft, bio: e.target.value })} />
           <Input placeholder="Twitter handle" value={draft.twitter ?? ""} onChange={(e) => setDraft({ ...draft, twitter: e.target.value })} />
           <Input placeholder="Website URL" value={draft.website ?? ""} onChange={(e) => setDraft({ ...draft, website: e.target.value })} />
-          <Button onClick={async () => { await onSave(draft); setOpen(false); }} className="w-full" disabled={!!uploading}>Save</Button>
+          <Button onClick={async () => {
+            if (draft.website && !safeHttpUrl(draft.website)) { toast.error("Website must start with http:// or https://"); return; }
+            await onSave(draft); setOpen(false);
+          }} className="w-full" disabled={!!uploading}>Save</Button>
         </div>
       </DialogContent>
     </Dialog>
