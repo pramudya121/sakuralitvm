@@ -16,6 +16,15 @@ import { shortAddr } from "@/lib/web3/ethers";
 import { CHAIN } from "@/lib/web3/contracts";
 import { useProfile, type DBProfile } from "@/lib/supabase-hooks";
 import { toast } from "sonner";
+
+// Only allow http(s) URLs to be rendered as hrefs — prevents javascript:/data: XSS.
+function safeHttpUrl(url?: string | null): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : null;
+  } catch { return null; }
+}
 export const Route = createFileRoute("/profile")({
   component: Profile,
   head: () => ({ meta: [{ title: "Profile — SakuraNFT" }] }),
