@@ -38,13 +38,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <img src={sakuraLogo} alt="SakuraNFT" className="w-9 h-9 rounded-full shadow-lg group-hover:scale-110 transition-transform ring-1 ring-primary/40" />
               <span className="font-bold text-lg gradient-text hidden sm:inline">SakuraNFT</span>
             </Link>
-            <nav className="hidden xl:flex items-center gap-0.5 flex-1 justify-center min-w-0">
+            <nav className="hidden lg:flex items-center gap-0.5 flex-1 justify-center min-w-0">
               {navItems.map((n) => (
                 <Link
                   key={n.to}
                   to={n.to}
-                  className="px-2.5 py-1.5 rounded-full text-[13px] font-medium text-muted-foreground hover:text-primary hover:bg-accent/40 transition-all whitespace-nowrap"
-                  activeProps={{ className: "px-2.5 py-1.5 rounded-full text-[13px] font-medium text-primary bg-accent/60 whitespace-nowrap" }}
+                  className="px-2 py-1.5 rounded-full text-[12.5px] font-medium text-muted-foreground hover:text-primary hover:bg-accent/40 transition-all whitespace-nowrap"
+                  activeProps={{ className: "px-2 py-1.5 rounded-full text-[12.5px] font-medium text-primary bg-accent/60 whitespace-nowrap" }}
                 >
                   {n.label}
                 </Link>
@@ -57,7 +57,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           {/* tablet & mobile horizontally-scrollable nav */}
-          <nav className="xl:hidden flex overflow-x-auto gap-1 px-3 pb-2 scrollbar-hide">
+          <nav className="lg:hidden flex overflow-x-auto gap-1 px-3 pb-2 scrollbar-hide">
+
             {navItems.map((n) => {
               const Icon = n.icon;
               return (
