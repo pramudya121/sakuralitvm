@@ -89,6 +89,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => subscribeWeb3Sync(() => { refreshWallet().catch(() => {}); }), [refreshWallet]);
 
+  // Keep Supabase wallet header in sync with connected address
+  useEffect(() => { setSupabaseWalletHeader(address); }, [address]);
+
   const value = useMemo(() => ({ address, signer, provider, chainId, balance, walletKind, connect, disconnect, refreshWallet }),
     [address, signer, provider, chainId, balance, walletKind, connect, disconnect, refreshWallet]);
 
