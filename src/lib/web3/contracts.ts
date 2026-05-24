@@ -16,7 +16,9 @@ export const CONTRACTS = {
   factory: "0x5687FDA3BdE14d38057699c402606ab470EcA873",
   weth: "0x4Fd3765cde8D1d2BE4EdbaA03940AfC56794c304",
   router: "0xd28967D75750f477E450Df81C73f34E2713B86B4",
+  autonomous: "0xbE50e133A3d0E2eD5581987D62da649d64e202C5",
 };
+
 
 export const MARKETPLACE_ABI = [
   "function buyNFT(uint256 listingId) payable",
