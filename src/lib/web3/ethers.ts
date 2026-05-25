@@ -469,7 +469,7 @@ export async function asaPlaceBid(signer: any, tokenId: bigint | number, priceEt
   const value = parseEther(priceEth);
   const b = await asaGetBid(tokenId);
   if (b.active && value <= b.bidPrice) {
-    throw new Error(`Bid harus lebih besar dari top bid (${formatUnits(b.bidPrice, 18)} ${CHAIN.symbol}).`);
+    throw new Error(`Bid harus lebih besar dari top bid (${formatEther(b.bidPrice)} ${CHAIN.symbol}).`);
   }
   const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
   return waitAndSync(c.placeBid(CONTRACTS.nftCollection, tokenId, { value }), "asa-bid");
