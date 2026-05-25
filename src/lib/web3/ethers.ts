@@ -111,7 +111,8 @@ export async function mintNFT(
   onProgress?.("Uploading image...");
   // Lazy import to keep web3 module client-bundle small
   const { supabase } = await import("@/integrations/supabase/client");
-  const ext = (file.name.split(".").pop() || "png").toLowerCase();
+  const { assertSafeImage } = await import("@/lib/upload");
+  const ext = assertSafeImage(file);
   const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const { error: upErr } = await supabase.storage.from("nft-images")
     .upload(path, file, { contentType: file.type, upsert: false });

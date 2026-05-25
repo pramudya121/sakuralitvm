@@ -147,12 +147,23 @@ export async function pushNotification(
   tokenId?: bigint | number,
   link?: string,
 ) {
-  await supabase.from("notifications").insert({
-    wallet_address: to.toLowerCase(),
-    type, title, message: message ?? null,
-    token_id: tokenId !== undefined ? Number(tokenId) : null,
-    link: link ?? null,
-  });
+  // Notifications are inserted server-side via supabaseAdmin so that the
+  // public role cannot spam other wallets' inboxes (RLS denies anon INSERT).
+  const { pushNotificationServer } = await import("./notifications.functions");
+  try {
+    await pushNotificationServer({
+      data: {
+        to,
+        type,
+        title,
+        message: message ?? null,
+        tokenId: tokenId !== undefined ? Number(tokenId) : null,
+        link: link ?? null,
+      },
+    });
+  } catch (e) {
+    console.warn("pushNotification failed", e);
+  }
 }
 
 // ---------- Views ----------
