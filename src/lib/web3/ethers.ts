@@ -413,39 +413,93 @@ async function ensureNftOperator(signer: any, operator: string) {
   }
 }
 
+async function asaAssertNotPaused() {
+  try {
+    const paused: boolean = await autonomousRead().paused();
+    if (paused) throw new Error("Autonomous Trading sedang di-pause oleh admin.");
+  } catch (e: any) {
+    if (e?.message?.includes("pause")) throw e;
+    // ignore read errors
+  }
+}
+
 export async function asaList(signer: any, tokenId: bigint | number, priceEth: string) {
+  if (!priceEth || +priceEth <= 0) throw new Error("Harga harus lebih dari 0");
+  await asaAssertNotPaused();
+  const me = (await signer.getAddress()).toLowerCase();
+  const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, readProvider);
+  const owner: string = await nft.ownerOf(tokenId).catch(() => "");
+  if (owner.toLowerCase() !== me) {
+    throw new Error("Kamu bukan pemilik NFT ini (atau sedang ter-escrow di marketplace lain).");
+  }
+  const existing = await asaGetListing(tokenId).catch(() => null);
+  if (existing?.active) throw new Error("NFT ini sudah ter-listing di Autonomous Trading.");
   await ensureNftOperator(signer, CONTRACTS.autonomous);
   const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
   return waitAndSync(c.list(CONTRACTS.nftCollection, tokenId, parseEther(priceEth)), "asa-list");
 }
 
 export async function asaDelist(signer: any, tokenId: bigint | number) {
+  const me = (await signer.getAddress()).toLowerCase();
+  const l = await asaGetListing(tokenId);
+  if (!l.active) throw new Error("Listing sudah tidak aktif.");
+  if (l.seller.toLowerCase() !== me) throw new Error("Hanya seller yang bisa delist.");
   const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
   return waitAndSync(c.delist(CONTRACTS.nftCollection, tokenId), "asa-delist");
 }
 
 export async function asaBuyNow(signer: any, tokenId: bigint | number, priceWei: bigint) {
+  await asaAssertNotPaused();
+  const me = (await signer.getAddress()).toLowerCase();
+  const l = await asaGetListing(tokenId);
+  if (!l.active) throw new Error("Listing sudah tidak aktif — mungkin sudah terjual atau di-delist.");
+  if (l.seller.toLowerCase() === me) throw new Error("Kamu tidak bisa membeli NFT milikmu sendiri.");
+  if (l.price !== priceWei) throw new Error("Harga berubah, silakan refresh halaman.");
   const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
   return waitAndSync(c.buyNow(CONTRACTS.nftCollection, tokenId, { value: priceWei }), "asa-buy");
 }
 
 export async function asaPlaceBid(signer: any, tokenId: bigint | number, priceEth: string) {
+  if (!priceEth || +priceEth <= 0) throw new Error("Harga bid harus > 0");
+  await asaAssertNotPaused();
+  const me = (await signer.getAddress()).toLowerCase();
+  const l = await asaGetListing(tokenId);
+  if (!l.active) throw new Error("Belum ada listing aktif untuk NFT ini. Bid hanya bisa untuk NFT yang sudah di-list.");
+  if (l.seller.toLowerCase() === me) throw new Error("Kamu tidak bisa bid NFT milikmu sendiri.");
+  const value = parseEther(priceEth);
+  const b = await asaGetBid(tokenId);
+  if (b.active && value <= b.bidPrice) {
+    throw new Error(`Bid harus lebih besar dari top bid (${formatEther(b.bidPrice)} ${CHAIN.symbol}).`);
+  }
   const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
-  return waitAndSync(c.placeBid(CONTRACTS.nftCollection, tokenId, { value: parseEther(priceEth) }), "asa-bid");
+  return waitAndSync(c.placeBid(CONTRACTS.nftCollection, tokenId, { value }), "asa-bid");
 }
 
 export async function asaCancelBid(signer: any, tokenId: bigint | number) {
+  const me = (await signer.getAddress()).toLowerCase();
+  const b = await asaGetBid(tokenId);
+  if (!b.active) throw new Error("Tidak ada bid aktif.");
+  if (b.bidder.toLowerCase() !== me) throw new Error("Hanya bidder yang bisa cancel bid.");
   const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
   return waitAndSync(c.cancelBid(CONTRACTS.nftCollection, tokenId), "asa-cancel-bid");
 }
 
 export async function asaAcceptBid(signer: any, tokenId: bigint | number) {
+  await asaAssertNotPaused();
+  const me = (await signer.getAddress()).toLowerCase();
+  const [l, b] = await Promise.all([asaGetListing(tokenId), asaGetBid(tokenId)]);
+  if (!l.active) throw new Error("Listing sudah tidak aktif. Tidak bisa accept bid.");
+  if (l.seller.toLowerCase() !== me) throw new Error("Hanya seller yang bisa accept bid.");
+  if (!b.active) throw new Error("Tidak ada bid aktif untuk diterima.");
   await ensureNftOperator(signer, CONTRACTS.autonomous);
   const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
   return waitAndSync(c.acceptBid(CONTRACTS.nftCollection, tokenId), "asa-accept-bid");
 }
 
 export async function asaWithdraw(signer: any) {
+  const me = await signer.getAddress();
+  const pending = await asaPendingWithdraw(me);
+  if (pending === 0n) throw new Error("Tidak ada saldo pending untuk ditarik.");
   const c = new Contract(CONTRACTS.autonomous, AUTONOMOUS_ABI, signer);
   return waitAndSync(c.withdraw(), "asa-withdraw");
 }
@@ -458,6 +512,26 @@ export async function asaGetListing(tokenId: bigint | number) {
 export async function asaGetBid(tokenId: bigint | number) {
   const r = await autonomousRead().getBid(CONTRACTS.nftCollection, tokenId);
   return { bidder: String(r[0]), bidPrice: r[1] as bigint, active: Boolean(r[2]) };
+}
+
+// Batch-fetch listing + bid for many tokens in parallel (chunked to avoid RPC overload)
+export async function asaGetMarketBatch(tokenIds: bigint[]) {
+  const out: Record<string, { listing: { seller: string; price: bigint; active: boolean }; bid: { bidder: string; bidPrice: bigint; active: boolean } }> = {};
+  const CHUNK = 12;
+  for (let i = 0; i < tokenIds.length; i += CHUNK) {
+    const slice = tokenIds.slice(i, i + CHUNK);
+    const results = await Promise.all(
+      slice.map((id) =>
+        Promise.all([asaGetListing(id), asaGetBid(id)])
+          .then(([l, b]) => ({ id, l, b }))
+          .catch(() => null),
+      ),
+    );
+    for (const r of results) {
+      if (r) out[r.id.toString()] = { listing: r.l, bid: r.b };
+    }
+  }
+  return out;
 }
 
 export async function asaPendingWithdraw(owner: string): Promise<bigint> {
