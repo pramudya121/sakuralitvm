@@ -97,12 +97,25 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ScrollToTop() {
+  const router = useRouter();
+  const pathname = router.state.location.pathname;
+  // Scroll to top on every route change for smooth UX
+  if (typeof window !== "undefined") {
+    queueMicrotask(() => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior }));
+  }
+  // referencing pathname so React re-evaluates on nav
+  void pathname;
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <WalletProvider>
+          <ScrollToTop />
           <Layout><Outlet /></Layout>
           <Toaster position="top-right" />
         </WalletProvider>
