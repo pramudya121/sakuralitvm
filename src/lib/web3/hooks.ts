@@ -32,12 +32,12 @@ let _nftPromise: Promise<NFTMeta[]> | null = null;
 let _listingPromise: Promise<Listing[]> | null = null;
 
 const CHUNK = 16;
-async function chunkedAll<T, R>(items: T[], fn: (x: T) => Promise<R>): Promise<R[]> {
+async function chunkedAll<T, R>(items: T[], fn: (x: T) => Promise<R | null>): Promise<R[]> {
   const out: R[] = [];
   for (let i = 0; i < items.length; i += CHUNK) {
     const slice = items.slice(i, i + CHUNK);
-    const r = await Promise.all(slice.map((x) => fn(x).catch(() => null as any)));
-    for (const v of r) if (v != null) out.push(v);
+    const r = await Promise.all(slice.map((x) => fn(x).catch(() => null)));
+    for (const v of r) if (v != null) out.push(v as R);
   }
   return out;
 }
