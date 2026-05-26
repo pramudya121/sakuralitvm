@@ -196,26 +196,42 @@ export async function makeOffer(signer: any, tokenId: bigint | number, priceEth:
 }
 
 export async function acceptOffer(signer: any, tokenId: bigint | number, offerIdx: bigint | number) {
-  // Use operator approval — more robust than per-token approve which gets cleared on every transfer.
   const me = (await signer.getAddress()).toLowerCase();
   const nft = new Contract(CONTRACTS.nftCollection, NFT_ABI, signer);
+  const offerC = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
 
-  // Sanity: confirm signer actually owns the token now (after any prior cancel-listing tx).
+  // 1. Re-verify offer is still active on-chain (state may drift between UI render and click).
+  const offer = await offerC.offers(CONTRACTS.nftCollection, tokenId, offerIdx).catch(() => null);
+  if (!offer) throw new Error("Offer tidak ditemukan on-chain (mungkin sudah dibatalkan).");
+  if (!offer.active) throw new Error("Offer sudah tidak aktif. Refresh daftar offer.");
+  if (offer.offerer === "0x0000000000000000000000000000000000000000") {
+    throw new Error("Slot offer kosong.");
+  }
+
+  // 2. Confirm signer owns the NFT now.
   const onChainOwner: string = await nft.ownerOf(tokenId);
   if (onChainOwner.toLowerCase() !== me) {
     throw new Error(
-      `NFT belum kembali ke wallet kamu (owner: ${onChainOwner.slice(0, 8)}...). Coba refresh sebentar lalu Accept lagi.`,
+      `NFT belum kembali ke wallet kamu (owner: ${onChainOwner.slice(0, 8)}...). Tunggu sebentar lalu Accept lagi.`,
     );
   }
 
+  // 3. Operator approval (persists across transfers).
   const isOp: boolean = await nft.isApprovedForAll(me, CONTRACTS.offer).catch(() => false);
   if (!isOp) {
     const txA = await nft.setApprovalForAll(CONTRACTS.offer, true);
     await txA.wait();
   }
 
-  const c = new Contract(CONTRACTS.offer, OFFER_ABI, signer);
-  return waitAndSync(c.acceptOffer(CONTRACTS.nftCollection, tokenId, offerIdx), "accept-offer");
+  // 4. Static-call first to surface a readable revert reason before spending gas.
+  try {
+    await offerC.acceptOffer.staticCall(CONTRACTS.nftCollection, tokenId, offerIdx);
+  } catch (e: any) {
+    const raw = e?.shortMessage ?? e?.reason ?? e?.message ?? "execution reverted";
+    throw new Error(`Tidak bisa accept offer: ${String(raw).replace(/^execution reverted:?\s*/i, "").slice(0, 160)}`);
+  }
+
+  return waitAndSync(offerC.acceptOffer(CONTRACTS.nftCollection, tokenId, offerIdx), "accept-offer");
 }
 
 // Accept an offer even when the NFT is currently listed: cancel listing first, then accept.
