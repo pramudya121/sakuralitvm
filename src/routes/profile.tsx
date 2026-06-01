@@ -179,6 +179,9 @@ function Profile() {
         <TabsContent value="portfolio" className="mt-4">
           <PortfolioPanel />
         </TabsContent>
+        <TabsContent value="activity" className="mt-4">
+          <ActivityFeed address={address} />
+        </TabsContent>
       </Tabs>
     </div>
   );
