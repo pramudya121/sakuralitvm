@@ -15,10 +15,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MintRouteImport } from './routes/mint'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DexRouteImport } from './routes/dex'
-import { Route as CollectionsRouteImport } from './routes/collections'
-import { Route as AuctionRouteImport } from './routes/auction'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
-import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as DexIndexRouteImport } from './routes/dex.index'
@@ -26,7 +23,6 @@ import { Route as UAddressRouteImport } from './routes/u.$address'
 import { Route as MarketplaceIdRouteImport } from './routes/marketplace.$id'
 import { Route as DexSwapRouteImport } from './routes/dex.swap'
 import { Route as DexLiquidityRouteImport } from './routes/dex.liquidity'
-import { Route as CollectionsAddressRouteImport } from './routes/collections.$address'
 import { Route as ApiPublicSiweVerifyRouteImport } from './routes/api/public/siwe/verify'
 import { Route as ApiPublicSiweNonceRouteImport } from './routes/api/public/siwe/nonce'
 
@@ -60,24 +56,9 @@ const DexRoute = DexRouteImport.update({
   path: '/dex',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CollectionsRoute = CollectionsRouteImport.update({
-  id: '/collections',
-  path: '/collections',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuctionRoute = AuctionRouteImport.update({
-  id: '/auction',
-  path: '/auction',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ActivityRoute = ActivityRouteImport.update({
-  id: '/activity',
-  path: '/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -115,11 +96,6 @@ const DexLiquidityRoute = DexLiquidityRouteImport.update({
   path: '/liquidity',
   getParentRoute: () => DexRoute,
 } as any)
-const CollectionsAddressRoute = CollectionsAddressRouteImport.update({
-  id: '/$address',
-  path: '/$address',
-  getParentRoute: () => CollectionsRoute,
-} as any)
 const ApiPublicSiweVerifyRoute = ApiPublicSiweVerifyRouteImport.update({
   id: '/api/public/siwe/verify',
   path: '/api/public/siwe/verify',
@@ -133,17 +109,13 @@ const ApiPublicSiweNonceRoute = ApiPublicSiweNonceRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
-  '/auction': typeof AuctionRoute
-  '/collections': typeof CollectionsRouteWithChildren
   '/dex': typeof DexRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/mint': typeof MintRoute
   '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/watchlist': typeof WatchlistRoute
-  '/collections/$address': typeof CollectionsAddressRoute
   '/dex/liquidity': typeof DexLiquidityRoute
   '/dex/swap': typeof DexSwapRoute
   '/marketplace/$id': typeof MarketplaceIdRoute
@@ -155,16 +127,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
-  '/auction': typeof AuctionRoute
-  '/collections': typeof CollectionsRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/mint': typeof MintRoute
   '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/watchlist': typeof WatchlistRoute
-  '/collections/$address': typeof CollectionsAddressRoute
   '/dex/liquidity': typeof DexLiquidityRoute
   '/dex/swap': typeof DexSwapRoute
   '/marketplace/$id': typeof MarketplaceIdRoute
@@ -177,17 +145,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
-  '/auction': typeof AuctionRoute
-  '/collections': typeof CollectionsRouteWithChildren
   '/dex': typeof DexRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/mint': typeof MintRoute
   '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/watchlist': typeof WatchlistRoute
-  '/collections/$address': typeof CollectionsAddressRoute
   '/dex/liquidity': typeof DexLiquidityRoute
   '/dex/swap': typeof DexSwapRoute
   '/marketplace/$id': typeof MarketplaceIdRoute
@@ -201,17 +165,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/activity'
     | '/analytics'
-    | '/auction'
-    | '/collections'
     | '/dex'
     | '/leaderboard'
     | '/mint'
     | '/profile'
     | '/sitemap.xml'
     | '/watchlist'
-    | '/collections/$address'
     | '/dex/liquidity'
     | '/dex/swap'
     | '/marketplace/$id'
@@ -223,16 +183,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/activity'
     | '/analytics'
-    | '/auction'
-    | '/collections'
     | '/leaderboard'
     | '/mint'
     | '/profile'
     | '/sitemap.xml'
     | '/watchlist'
-    | '/collections/$address'
     | '/dex/liquidity'
     | '/dex/swap'
     | '/marketplace/$id'
@@ -244,17 +200,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/activity'
     | '/analytics'
-    | '/auction'
-    | '/collections'
     | '/dex'
     | '/leaderboard'
     | '/mint'
     | '/profile'
     | '/sitemap.xml'
     | '/watchlist'
-    | '/collections/$address'
     | '/dex/liquidity'
     | '/dex/swap'
     | '/marketplace/$id'
@@ -267,10 +219,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ActivityRoute: typeof ActivityRoute
   AnalyticsRoute: typeof AnalyticsRoute
-  AuctionRoute: typeof AuctionRoute
-  CollectionsRoute: typeof CollectionsRouteWithChildren
   DexRoute: typeof DexRouteWithChildren
   LeaderboardRoute: typeof LeaderboardRoute
   MintRoute: typeof MintRoute
@@ -328,32 +277,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/collections': {
-      id: '/collections'
-      path: '/collections'
-      fullPath: '/collections'
-      preLoaderRoute: typeof CollectionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auction': {
-      id: '/auction'
-      path: '/auction'
-      fullPath: '/auction'
-      preLoaderRoute: typeof AuctionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/analytics': {
       id: '/analytics'
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AnalyticsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/activity': {
-      id: '/activity'
-      path: '/activity'
-      fullPath: '/activity'
-      preLoaderRoute: typeof ActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -405,13 +333,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DexLiquidityRouteImport
       parentRoute: typeof DexRoute
     }
-    '/collections/$address': {
-      id: '/collections/$address'
-      path: '/$address'
-      fullPath: '/collections/$address'
-      preLoaderRoute: typeof CollectionsAddressRouteImport
-      parentRoute: typeof CollectionsRoute
-    }
     '/api/public/siwe/verify': {
       id: '/api/public/siwe/verify'
       path: '/api/public/siwe/verify'
@@ -429,18 +350,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface CollectionsRouteChildren {
-  CollectionsAddressRoute: typeof CollectionsAddressRoute
-}
-
-const CollectionsRouteChildren: CollectionsRouteChildren = {
-  CollectionsAddressRoute: CollectionsAddressRoute,
-}
-
-const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(
-  CollectionsRouteChildren,
-)
-
 interface DexRouteChildren {
   DexLiquidityRoute: typeof DexLiquidityRoute
   DexSwapRoute: typeof DexSwapRoute
@@ -457,10 +366,7 @@ const DexRouteWithChildren = DexRoute._addFileChildren(DexRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ActivityRoute: ActivityRoute,
   AnalyticsRoute: AnalyticsRoute,
-  AuctionRoute: AuctionRoute,
-  CollectionsRoute: CollectionsRouteWithChildren,
   DexRoute: DexRouteWithChildren,
   LeaderboardRoute: LeaderboardRoute,
   MintRoute: MintRoute,

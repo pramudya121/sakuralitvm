@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWallet } from "@/contexts/WalletContext";
 import { mintNFT } from "@/lib/web3/ethers";
 import { generateNFTDescription, generateNFTImage } from "@/lib/ai.functions";
-import { CollectionPicker } from "@/components/CollectionPicker";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/mint")({
@@ -49,8 +48,6 @@ function Mint() {
   const [category, setCategory] = useState("Digital Art");
   const [aiPrompt, setAiPrompt] = useState("");
   const [traits, setTraits] = useState<{ trait_type: string; value: string }[]>([]);
-  const [collectionSlug, setCollectionSlug] = useState<string | null>(null);
-  const [collectionName, setCollectionName] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   const [aiBusy, setAiBusy] = useState<"img" | "desc" | null>(null);
@@ -81,10 +78,10 @@ function Mint() {
   }
 
   async function handleAIDesc() {
-    if (!name) return toast.error("Enter NFT name first");
+    if (!name && !preview) return toast.error("Add a name or artwork first");
     setAiBusy("desc");
     try {
-      const { description } = await genDesc({ data: { name, hint: aiPrompt || category } });
+      const { description } = await genDesc({ data: { name: name || "Untitled", hint: aiPrompt || category, imageDataUrl: preview || undefined } });
       setDesc(description);
       toast.success("Description ready!");
     } catch (e: any) {
@@ -106,7 +103,6 @@ function Mint() {
       const metaTraits = traits.filter((t) => t.trait_type && t.value);
       const extra = {
         category,
-        collection: collectionSlug ? { slug: collectionSlug, name: collectionName } : null,
         royalty_bps: Math.floor(Math.max(0, Math.min(50, +royalty || 0)) * 100),
         attributes: metaTraits,
       };
@@ -130,7 +126,7 @@ function Mint() {
         {/* LEFT: Artwork */}
         <div className="form-panel rounded-3xl p-5 glow-card">
           <p className="text-sm font-semibold mb-3">Artwork</p>
-          <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-background/40 border mb-4">
+          <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-card border mb-4">
             <button onClick={() => setMode("upload")}
               className={`py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-2 ${mode === "upload" ? "bg-gradient-to-r from-primary/30 to-accent/40 text-foreground shadow" : "text-muted-foreground"}`}>
               <Upload className="w-4 h-4" /> Upload
@@ -171,7 +167,7 @@ function Mint() {
             <div className="mt-4 space-y-3">
               <Textarea rows={2} placeholder="e.g. A cherry blossom warrior fox in a moonlit forest, ethereal glow"
                 value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}
-                className="bg-background/40 resize-none text-sm" />
+                className="bg-card resize-none text-sm" />
               <div className="flex gap-2">
                 <select value={category} onChange={(e) => setCategory(e.target.value)}
                   className="px-3 py-2 rounded-xl bg-background/60 border text-sm">
@@ -194,31 +190,29 @@ function Mint() {
           <div>
             <label className="text-sm font-medium">Name <span className="text-primary">*</span></label>
             <Input value={name} onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Winter Bloom #001" className="mt-1.5 bg-background/40" />
+              placeholder="e.g. Winter Bloom #001" className="mt-1.5 bg-card" />
           </div>
 
-          <CollectionPicker
-            value={collectionSlug}
-            onChange={(slug, col) => { setCollectionSlug(slug); setCollectionName(col?.name ?? null); }}
-          />
+
+
 
 
           <div>
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Description</label>
               <Button type="button" size="sm" variant="ghost" className="h-7 text-xs"
-                onClick={handleAIDesc} disabled={aiBusy !== null || !name}>
+                onClick={handleAIDesc} disabled={aiBusy !== null || (!name && !preview)}>
                 <Wand2 className="w-3 h-3 mr-1" /> {aiBusy === "desc" ? "Writing..." : "AI write"}
               </Button>
             </div>
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={4}
-              placeholder="Tell the story behind this artwork..." className="mt-1.5 bg-background/40 resize-none" />
+              placeholder="Tell the story behind this artwork..." className="mt-1.5 bg-card resize-none" />
           </div>
 
           <div>
             <label className="text-sm font-medium">Royalty (%)</label>
             <Input type="number" min="0" max="50" step="0.5" value={royalty}
-              onChange={(e) => setRoyalty(e.target.value)} className="mt-1.5 bg-background/40" />
+              onChange={(e) => setRoyalty(e.target.value)} className="mt-1.5 bg-card" />
             <p className="text-[11px] text-muted-foreground mt-1">Suggested resale royalty stored in metadata.</p>
           </div>
 
@@ -237,9 +231,9 @@ function Mint() {
                 {traits.map((t, i) => (
                   <div key={i} className="flex gap-2 items-center">
                     <Input placeholder="Trait" value={t.trait_type}
-                      onChange={(e) => updateTrait(i, "trait_type", e.target.value)} className="bg-background/40" />
+                      onChange={(e) => updateTrait(i, "trait_type", e.target.value)} className="bg-card" />
                     <Input placeholder="Value" value={t.value}
-                      onChange={(e) => updateTrait(i, "value", e.target.value)} className="bg-background/40" />
+                      onChange={(e) => updateTrait(i, "value", e.target.value)} className="bg-card" />
                     <button onClick={() => removeTrait(i)} className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
                       <X className="w-4 h-4" />
                     </button>

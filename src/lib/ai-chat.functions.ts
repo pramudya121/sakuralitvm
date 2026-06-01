@@ -115,7 +115,7 @@ const TOOLS = [
         properties: {
           path: {
             type: "string",
-            enum: ["/", "/marketplace", "/mint", "/collections", "/dex/swap", "/dex/liquidity", "/activity", "/profile", "/analytics", "/leaderboard", "/watchlist"],
+            enum: ["/", "/marketplace", "/mint", "/dex/swap", "/dex/liquidity", "/profile", "/analytics", "/leaderboard", "/watchlist"],
           },
         },
         required: ["path"],

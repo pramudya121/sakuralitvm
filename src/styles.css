@@ -141,15 +141,15 @@
   border: 1px solid color-mix(in oklab, var(--border) 100%, transparent);
 }
 
-/* Solid panel for forms — never transparent */
+/* Solid panel for forms — fully opaque, no glass effect */
 .form-panel {
   background: var(--card);
-  background-color: color-mix(in oklab, var(--card) 100%, transparent);
   border: 1px solid var(--border);
   box-shadow: 0 8px 28px -16px color-mix(in oklab, var(--primary) 35%, transparent);
 }
 .dark .form-panel {
-  background: oklch(0.19 0.035 285);
+  background: oklch(0.17 0.03 285);
+  border-color: oklch(0.28 0.04 285);
 }
 
 /* Solid DEX panel (no transparency) */

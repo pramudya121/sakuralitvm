@@ -10,11 +10,20 @@ export const generateNFTDescription = createServerFn({ method: "POST" })
     z.object({
       name: z.string().min(1).max(120),
       hint: z.string().max(500).optional(),
+      imageDataUrl: z.string().max(20_000_000).optional(),
     }).parse(input),
   )
   .handler(async ({ data }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI not configured");
+
+    const userParts: any[] = [];
+    if (data.imageDataUrl) {
+      userParts.push({ type: "image_url", image_url: { url: data.imageDataUrl } });
+      userParts.push({ type: "text", text: `Write a concise, evocative NFT description (max 2 sentences, under 240 characters) for an NFT titled "${data.name}". Base the description on what you SEE in the image — colors, subject, mood, style. ${data.hint ? `Extra context: ${data.hint}.` : ""} No hashtags, no emojis.` });
+    } else {
+      userParts.push({ type: "text", text: `Write a concise, evocative NFT description (max 2 sentences, under 240 characters) for an NFT titled "${data.name}".${data.hint ? ` Theme/context: ${data.hint}.` : ""} No hashtags, no emojis.` });
+    }
 
     const res = await fetch(LOVABLE_API_URL, {
       method: "POST",
@@ -22,8 +31,8 @@ export const generateNFTDescription = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You write evocative, poetic NFT descriptions in English (max 2 sentences, under 240 characters). Theme: winter sakura, snow, cherry blossoms, ethereal beauty. No hashtags, no emojis." },
-          { role: "user", content: `NFT name: "${data.name}".${data.hint ? ` Extra context: ${data.hint}` : ""} Write the description.` },
+          { role: "system", content: "You write evocative, concise NFT descriptions in English. Stay faithful to the user's subject and visual cues. Never force a specific theme (e.g. sakura) unless it's clearly present." },
+          { role: "user", content: userParts },
         ],
       }),
     });
@@ -52,7 +61,7 @@ export const generateNFTImage = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-image",
         messages: [
-          { role: "user", content: `Stunning 3D rendered NFT artwork, winter sakura theme: ${data.prompt}. Cinematic lighting, ultra detailed, pink cherry blossoms with snow, ethereal atmosphere.` },
+          { role: "user", content: `High quality detailed artwork: ${data.prompt}. Cinematic lighting, ultra detailed.` },
         ],
         modalities: ["image", "text"],
       }),

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { Award, Edit2, Twitter, Globe, Copy, ExternalLink, Tag, Wallet, TrendingUp, Image as ImageIcon, Inbox } from "lucide-react";
+import { Award, Edit2, Twitter, Globe, Copy, ExternalLink, Tag, Wallet, TrendingUp, Image as ImageIcon, Inbox, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,7 @@ import { useAllNFTs, useAllListings } from "@/lib/web3/hooks";
 import { NFTCard } from "@/components/NFTCard";
 import { PortfolioPanel } from "@/components/PortfolioPanel";
 import { MyNFTOffers } from "@/components/MyNFTOffers";
+import { ActivityFeed } from "@/components/ActivityFeed";
 import { shortAddr } from "@/lib/web3/ethers";
 import { CHAIN } from "@/lib/web3/contracts";
 import { useProfile, type DBProfile } from "@/lib/supabase-hooks";
@@ -137,6 +138,7 @@ function Profile() {
           <TabsTrigger value="listed">Listed ({myListings.length})</TabsTrigger>
           <TabsTrigger value="offers"><Inbox className="w-3 h-3 mr-1" /> Offers</TabsTrigger>
           <TabsTrigger value="portfolio">Tokens</TabsTrigger>
+          <TabsTrigger value="activity"><Activity className="w-3 h-3 mr-1" /> Activity</TabsTrigger>
         </TabsList>
         <TabsContent value="collection" className="space-y-4 mt-4">
           <div className="flex items-center justify-between">
@@ -176,6 +178,9 @@ function Profile() {
         </TabsContent>
         <TabsContent value="portfolio" className="mt-4">
           <PortfolioPanel />
+        </TabsContent>
+        <TabsContent value="activity" className="mt-4">
+          <ActivityFeed address={address} />
         </TabsContent>
       </Tabs>
     </div>
