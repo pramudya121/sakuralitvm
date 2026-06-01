@@ -80,10 +80,10 @@ function Mint() {
   }
 
   async function handleAIDesc() {
-    if (!name) return toast.error("Enter NFT name first");
+    if (!name && !preview) return toast.error("Add a name or artwork first");
     setAiBusy("desc");
     try {
-      const { description } = await genDesc({ data: { name, hint: aiPrompt || category } });
+      const { description } = await genDesc({ data: { name: name || "Untitled", hint: aiPrompt || category, imageDataUrl: preview || undefined } });
       setDesc(description);
       toast.success("Description ready!");
     } catch (e: any) {
