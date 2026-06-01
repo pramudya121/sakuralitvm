@@ -142,7 +142,8 @@ RULES:
 - Wrap = zkLTC→wzkLTC (1:1), Unwrap = wzkLTC→zkLTC (1:1). No fee.
 - Confirm risky actions (swap/send) briefly before calling the propose_* tool.`;
 
-import { requireSiwe } from "./siwe-middleware";
+
+
 
 export const chatAgent = createServerFn({ method: "POST" })
   .middleware([requireSiwe])
