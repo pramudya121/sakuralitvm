@@ -196,10 +196,8 @@ function Mint() {
               placeholder="e.g. Winter Bloom #001" className="mt-1.5 bg-background/40" />
           </div>
 
-          <CollectionPicker
-            value={collectionSlug}
-            onChange={(slug, col) => { setCollectionSlug(slug); setCollectionName(col?.name ?? null); }}
-          />
+
+
 
 
           <div>
