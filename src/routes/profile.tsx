@@ -12,6 +12,7 @@ import { useAllNFTs, useAllListings } from "@/lib/web3/hooks";
 import { NFTCard } from "@/components/NFTCard";
 import { PortfolioPanel } from "@/components/PortfolioPanel";
 import { MyNFTOffers } from "@/components/MyNFTOffers";
+import { ActivityFeed } from "@/components/ActivityFeed";
 import { shortAddr } from "@/lib/web3/ethers";
 import { CHAIN } from "@/lib/web3/contracts";
 import { useProfile, type DBProfile } from "@/lib/supabase-hooks";
