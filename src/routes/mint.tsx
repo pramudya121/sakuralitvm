@@ -48,8 +48,6 @@ function Mint() {
   const [category, setCategory] = useState("Digital Art");
   const [aiPrompt, setAiPrompt] = useState("");
   const [traits, setTraits] = useState<{ trait_type: string; value: string }[]>([]);
-  const [collectionSlug, setCollectionSlug] = useState<string | null>(null);
-  const [collectionName, setCollectionName] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   const [aiBusy, setAiBusy] = useState<"img" | "desc" | null>(null);
