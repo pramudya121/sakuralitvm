@@ -138,6 +138,7 @@ function Profile() {
           <TabsTrigger value="listed">Listed ({myListings.length})</TabsTrigger>
           <TabsTrigger value="offers"><Inbox className="w-3 h-3 mr-1" /> Offers</TabsTrigger>
           <TabsTrigger value="portfolio">Tokens</TabsTrigger>
+          <TabsTrigger value="activity"><Activity className="w-3 h-3 mr-1" /> Activity</TabsTrigger>
         </TabsList>
         <TabsContent value="collection" className="space-y-4 mt-4">
           <div className="flex items-center justify-between">
