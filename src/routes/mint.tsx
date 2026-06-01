@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWallet } from "@/contexts/WalletContext";
 import { mintNFT } from "@/lib/web3/ethers";
 import { generateNFTDescription, generateNFTImage } from "@/lib/ai.functions";
-import { CollectionPicker } from "@/components/CollectionPicker";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/mint")({
