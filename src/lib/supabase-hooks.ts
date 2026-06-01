@@ -184,8 +184,11 @@ export function useNFTViews(tokenId?: string | bigint) {
   const increment = useCallback(async () => {
     if (tokenId === undefined) return;
     const tid = Number(tokenId);
-    await supabase.rpc("increment_nft_view", { p_token_id: tid });
-    setCount((c) => c + 1);
+    try {
+      const { incrementNftView } = await import("./nft-views.functions");
+      await incrementNftView({ data: { tokenId: tid } });
+      setCount((c) => c + 1);
+    } catch {}
   }, [tokenId]);
 
   return { count, increment };
