@@ -31,14 +31,18 @@ function b64uDecode(s: string): Uint8Array {
 }
 
 async function hmac(data: string): Promise<Uint8Array> {
+  const keyBytes = getSigningKey();
+  const keyBuf = keyBytes.buffer.slice(keyBytes.byteOffset, keyBytes.byteOffset + keyBytes.byteLength) as ArrayBuffer;
   const key = await crypto.subtle.importKey(
     "raw",
-    getSigningKey(),
+    keyBuf,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
   );
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
+  const dataBytes = new TextEncoder().encode(data);
+  const dataBuf = dataBytes.buffer.slice(dataBytes.byteOffset, dataBytes.byteOffset + dataBytes.byteLength) as ArrayBuffer;
+  const sig = await crypto.subtle.sign("HMAC", key, dataBuf);
   return new Uint8Array(sig);
 }
 
