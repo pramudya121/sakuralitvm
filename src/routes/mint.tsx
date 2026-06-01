@@ -129,7 +129,7 @@ function Mint() {
         {/* LEFT: Artwork */}
         <div className="form-panel rounded-3xl p-5 glow-card">
           <p className="text-sm font-semibold mb-3">Artwork</p>
-          <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-background/40 border mb-4">
+          <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-card border mb-4">
             <button onClick={() => setMode("upload")}
               className={`py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-2 ${mode === "upload" ? "bg-gradient-to-r from-primary/30 to-accent/40 text-foreground shadow" : "text-muted-foreground"}`}>
               <Upload className="w-4 h-4" /> Upload
@@ -170,7 +170,7 @@ function Mint() {
             <div className="mt-4 space-y-3">
               <Textarea rows={2} placeholder="e.g. A cherry blossom warrior fox in a moonlit forest, ethereal glow"
                 value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}
-                className="bg-background/40 resize-none text-sm" />
+                className="bg-card resize-none text-sm" />
               <div className="flex gap-2">
                 <select value={category} onChange={(e) => setCategory(e.target.value)}
                   className="px-3 py-2 rounded-xl bg-background/60 border text-sm">
@@ -193,7 +193,7 @@ function Mint() {
           <div>
             <label className="text-sm font-medium">Name <span className="text-primary">*</span></label>
             <Input value={name} onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Winter Bloom #001" className="mt-1.5 bg-background/40" />
+              placeholder="e.g. Winter Bloom #001" className="mt-1.5 bg-card" />
           </div>
 
 
@@ -209,13 +209,13 @@ function Mint() {
               </Button>
             </div>
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={4}
-              placeholder="Tell the story behind this artwork..." className="mt-1.5 bg-background/40 resize-none" />
+              placeholder="Tell the story behind this artwork..." className="mt-1.5 bg-card resize-none" />
           </div>
 
           <div>
             <label className="text-sm font-medium">Royalty (%)</label>
             <Input type="number" min="0" max="50" step="0.5" value={royalty}
-              onChange={(e) => setRoyalty(e.target.value)} className="mt-1.5 bg-background/40" />
+              onChange={(e) => setRoyalty(e.target.value)} className="mt-1.5 bg-card" />
             <p className="text-[11px] text-muted-foreground mt-1">Suggested resale royalty stored in metadata.</p>
           </div>
 
@@ -234,9 +234,9 @@ function Mint() {
                 {traits.map((t, i) => (
                   <div key={i} className="flex gap-2 items-center">
                     <Input placeholder="Trait" value={t.trait_type}
-                      onChange={(e) => updateTrait(i, "trait_type", e.target.value)} className="bg-background/40" />
+                      onChange={(e) => updateTrait(i, "trait_type", e.target.value)} className="bg-card" />
                     <Input placeholder="Value" value={t.value}
-                      onChange={(e) => updateTrait(i, "value", e.target.value)} className="bg-background/40" />
+                      onChange={(e) => updateTrait(i, "value", e.target.value)} className="bg-card" />
                     <button onClick={() => removeTrait(i)} className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
                       <X className="w-4 h-4" />
                     </button>
