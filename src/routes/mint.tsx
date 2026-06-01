@@ -201,7 +201,7 @@ function Mint() {
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Description</label>
               <Button type="button" size="sm" variant="ghost" className="h-7 text-xs"
-                onClick={handleAIDesc} disabled={aiBusy !== null || !name}>
+                onClick={handleAIDesc} disabled={aiBusy !== null || (!name && !preview)}>
                 <Wand2 className="w-3 h-3 mr-1" /> {aiBusy === "desc" ? "Writing..." : "AI write"}
               </Button>
             </div>
