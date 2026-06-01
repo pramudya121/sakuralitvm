@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSiwe } from "./siwe-middleware";
+
 
 const LOVABLE_API_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
@@ -140,7 +142,11 @@ RULES:
 - Wrap = zkLTC→wzkLTC (1:1), Unwrap = wzkLTC→zkLTC (1:1). No fee.
 - Confirm risky actions (swap/send) briefly before calling the propose_* tool.`;
 
+
+
+
 export const chatAgent = createServerFn({ method: "POST" })
+  .middleware([requireSiwe])
   .inputValidator((input) =>
     z.object({
       messages: z.array(MessageSchema).min(1).max(60),
@@ -150,12 +156,6 @@ export const chatAgent = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI not configured");
 
-    // Require a connected wallet — blocks anonymous abuse of paid AI credits.
-    const { getRequestHeader } = await import("@tanstack/react-start/server");
-    const wallet = (getRequestHeader("x-wallet-address") ?? "").toLowerCase();
-    if (!/^0x[a-f0-9]{40}$/.test(wallet)) {
-      return { error: "Connect your wallet to use the AI assistant." as const };
-    }
 
 
     const res = await fetch(LOVABLE_API_URL, {

@@ -27,6 +27,8 @@ import { Route as MarketplaceIdRouteImport } from './routes/marketplace.$id'
 import { Route as DexSwapRouteImport } from './routes/dex.swap'
 import { Route as DexLiquidityRouteImport } from './routes/dex.liquidity'
 import { Route as CollectionsAddressRouteImport } from './routes/collections.$address'
+import { Route as ApiPublicSiweVerifyRouteImport } from './routes/api/public/siwe/verify'
+import { Route as ApiPublicSiweNonceRouteImport } from './routes/api/public/siwe/nonce'
 
 const WatchlistRoute = WatchlistRouteImport.update({
   id: '/watchlist',
@@ -118,6 +120,16 @@ const CollectionsAddressRoute = CollectionsAddressRouteImport.update({
   path: '/$address',
   getParentRoute: () => CollectionsRoute,
 } as any)
+const ApiPublicSiweVerifyRoute = ApiPublicSiweVerifyRouteImport.update({
+  id: '/api/public/siwe/verify',
+  path: '/api/public/siwe/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSiweNonceRoute = ApiPublicSiweNonceRouteImport.update({
+  id: '/api/public/siwe/nonce',
+  path: '/api/public/siwe/nonce',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +150,8 @@ export interface FileRoutesByFullPath {
   '/u/$address': typeof UAddressRoute
   '/dex/': typeof DexIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
+  '/api/public/siwe/nonce': typeof ApiPublicSiweNonceRoute
+  '/api/public/siwe/verify': typeof ApiPublicSiweVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -157,6 +171,8 @@ export interface FileRoutesByTo {
   '/u/$address': typeof UAddressRoute
   '/dex': typeof DexIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
+  '/api/public/siwe/nonce': typeof ApiPublicSiweNonceRoute
+  '/api/public/siwe/verify': typeof ApiPublicSiweVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -178,6 +194,8 @@ export interface FileRoutesById {
   '/u/$address': typeof UAddressRoute
   '/dex/': typeof DexIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
+  '/api/public/siwe/nonce': typeof ApiPublicSiweNonceRoute
+  '/api/public/siwe/verify': typeof ApiPublicSiweVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -200,6 +218,8 @@ export interface FileRouteTypes {
     | '/u/$address'
     | '/dex/'
     | '/marketplace/'
+    | '/api/public/siwe/nonce'
+    | '/api/public/siwe/verify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -219,6 +239,8 @@ export interface FileRouteTypes {
     | '/u/$address'
     | '/dex'
     | '/marketplace'
+    | '/api/public/siwe/nonce'
+    | '/api/public/siwe/verify'
   id:
     | '__root__'
     | '/'
@@ -239,6 +261,8 @@ export interface FileRouteTypes {
     | '/u/$address'
     | '/dex/'
     | '/marketplace/'
+    | '/api/public/siwe/nonce'
+    | '/api/public/siwe/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -256,6 +280,8 @@ export interface RootRouteChildren {
   MarketplaceIdRoute: typeof MarketplaceIdRoute
   UAddressRoute: typeof UAddressRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
+  ApiPublicSiweNonceRoute: typeof ApiPublicSiweNonceRoute
+  ApiPublicSiweVerifyRoute: typeof ApiPublicSiweVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -386,6 +412,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionsAddressRouteImport
       parentRoute: typeof CollectionsRoute
     }
+    '/api/public/siwe/verify': {
+      id: '/api/public/siwe/verify'
+      path: '/api/public/siwe/verify'
+      fullPath: '/api/public/siwe/verify'
+      preLoaderRoute: typeof ApiPublicSiweVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/siwe/nonce': {
+      id: '/api/public/siwe/nonce'
+      path: '/api/public/siwe/nonce'
+      fullPath: '/api/public/siwe/nonce'
+      preLoaderRoute: typeof ApiPublicSiweNonceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -430,6 +470,8 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceIdRoute: MarketplaceIdRoute,
   UAddressRoute: UAddressRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
+  ApiPublicSiweNonceRoute: ApiPublicSiweNonceRoute,
+  ApiPublicSiweVerifyRoute: ApiPublicSiweVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

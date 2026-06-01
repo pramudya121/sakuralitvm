@@ -32,13 +32,15 @@ export function useProfile(address?: string | null) {
 
   const save = useCallback(async (patch: Partial<DBProfile>) => {
     if (!address) return;
-    const row = { wallet_address: address.toLowerCase(), ...patch };
-    const { data } = await supabase
-      .from("profiles")
-      .upsert(row, { onConflict: "wallet_address" })
-      .select()
-      .single();
-    if (data) setProfile(data as DBProfile);
+    const { upsertProfile } = await import("./profile.functions");
+    const { wallet_address: _w, ...rest } = patch;
+    try {
+      const res = await upsertProfile({ data: rest });
+      if (res?.profile) setProfile(res.profile as DBProfile);
+    } catch (e) {
+      console.warn("profile save failed", e);
+      throw e;
+    }
   }, [address]);
 
   return { profile, loading, save, reload: load };
@@ -61,18 +63,19 @@ export function useWatchlist(address?: string | null) {
 
   const toggle = useCallback(async (tokenId: string) => {
     if (!address) return;
-    const wallet = address.toLowerCase();
     const tid = BigInt(tokenId).toString();
     const isFav = items.includes(tid);
-    if (isFav) {
-      setItems(items.filter((x) => x !== tid));
-      await supabase.from("watchlist").delete()
-        .eq("wallet_address", wallet).eq("token_id", Number(tid));
-    } else {
-      setItems([...items, tid]);
-      await supabase.from("watchlist").insert({ wallet_address: wallet, token_id: Number(tid) });
+    // optimistic
+    setItems(isFav ? items.filter((x) => x !== tid) : [...items, tid]);
+    try {
+      const { toggleWatchlist } = await import("./watchlist.functions");
+      await toggleWatchlist({ data: { tokenId: Number(tid) } });
+    } catch (e) {
+      console.warn("watchlist toggle failed", e);
+      // rollback
+      load();
     }
-  }, [address, items]);
+  }, [address, items, load]);
 
   return { items, toggle, reload: load };
 }
@@ -131,9 +134,14 @@ export function useNotifications(address?: string | null) {
   const markAllRead = useCallback(async () => {
     if (!address) return;
     setList((p) => p.map((n) => ({ ...n, read: true })));
-    await supabase.from("notifications").update({ read: true })
-      .eq("wallet_address", address.toLowerCase()).eq("read", false);
-  }, [address]);
+    try {
+      const { markNotificationsRead } = await import("./notifications.functions");
+      await markNotificationsRead();
+    } catch (e) {
+      console.warn("mark read failed", e);
+      load();
+    }
+  }, [address, load]);
 
   const unread = list.filter((n) => !n.read).length;
   return { list, unread, markAllRead, reload: load };
@@ -147,8 +155,6 @@ export async function pushNotification(
   tokenId?: bigint | number,
   link?: string,
 ) {
-  // Notifications are inserted server-side via supabaseAdmin so that the
-  // public role cannot spam other wallets' inboxes (RLS denies anon INSERT).
   const { pushNotificationServer } = await import("./notifications.functions");
   try {
     await pushNotificationServer({
@@ -241,16 +247,17 @@ export function useNFTLikes(tokenId?: string | bigint, viewer?: string | null) {
   const toggle = useCallback(async () => {
     if (!viewer || tokenId === undefined) return;
     const tid = Number(tokenId);
-    const wallet = viewer.toLowerCase();
-    if (liked) {
-      setLiked(false); setCount((c) => Math.max(0, c - 1));
-      await supabase.from("nft_likes").delete()
-        .eq("token_id", tid).eq("wallet_address", wallet);
-    } else {
-      setLiked(true); setCount((c) => c + 1);
-      await supabase.from("nft_likes").insert({ token_id: tid, wallet_address: wallet });
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setCount((c) => Math.max(0, c + (wasLiked ? -1 : 1)));
+    try {
+      const { toggleLike } = await import("./likes.functions");
+      await toggleLike({ data: { tokenId: tid } });
+    } catch (e) {
+      console.warn("like toggle failed", e);
+      load();
     }
-  }, [liked, tokenId, viewer]);
+  }, [liked, tokenId, viewer, load]);
 
   return { count, liked, toggle };
 }
@@ -293,20 +300,29 @@ export function useNFTComments(tokenId?: string | bigint) {
     return () => { supabase.removeChannel(ch); };
   }, [tokenId, load]);
 
-  const post = useCallback(async (wallet: string, content: string) => {
+  const post = useCallback(async (_wallet: string, content: string) => {
     if (tokenId === undefined) return;
     const text = content.trim().slice(0, 1000);
     if (!text) return;
-    await supabase.from("nft_comments").insert({
-      token_id: Number(tokenId),
-      wallet_address: wallet.toLowerCase(),
-      content: text,
-    });
-  }, [tokenId]);
+    try {
+      const { postComment } = await import("./comments.functions");
+      await postComment({ data: { tokenId: Number(tokenId), content: text } });
+      load();
+    } catch (e) {
+      console.warn("post comment failed", e);
+      throw e;
+    }
+  }, [tokenId, load]);
 
   const remove = useCallback(async (id: string) => {
-    await supabase.from("nft_comments").delete().eq("id", id);
-  }, []);
+    try {
+      const { deleteComment } = await import("./comments.functions");
+      await deleteComment({ data: { id } });
+      load();
+    } catch (e) {
+      console.warn("delete comment failed", e);
+    }
+  }, [load]);
 
   return { comments, post, remove, reload: load };
 }

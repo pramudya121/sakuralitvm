@@ -1,9 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSiwe } from "./siwe-middleware";
 
 const LOVABLE_API_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 export const generateNFTDescription = createServerFn({ method: "POST" })
+  .middleware([requireSiwe])
   .inputValidator((input) =>
     z.object({
       name: z.string().min(1).max(120),
@@ -13,10 +15,6 @@ export const generateNFTDescription = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI not configured");
-    const { getRequestHeader } = await import("@tanstack/react-start/server");
-    const wallet = (getRequestHeader("x-wallet-address") ?? "").toLowerCase();
-    if (!/^0x[a-f0-9]{40}$/.test(wallet)) throw new Error("Connect your wallet to use AI features");
-
 
     const res = await fetch(LOVABLE_API_URL, {
       method: "POST",
@@ -38,6 +36,7 @@ export const generateNFTDescription = createServerFn({ method: "POST" })
   });
 
 export const generateNFTImage = createServerFn({ method: "POST" })
+  .middleware([requireSiwe])
   .inputValidator((input) =>
     z.object({
       prompt: z.string().min(3).max(500),
@@ -46,10 +45,6 @@ export const generateNFTImage = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI not configured");
-    const { getRequestHeader } = await import("@tanstack/react-start/server");
-    const wallet = (getRequestHeader("x-wallet-address") ?? "").toLowerCase();
-    if (!/^0x[a-f0-9]{40}$/.test(wallet)) throw new Error("Connect your wallet to use AI features");
-
 
     const res = await fetch(LOVABLE_API_URL, {
       method: "POST",
