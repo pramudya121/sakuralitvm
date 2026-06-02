@@ -59,9 +59,9 @@ export const generateNFTImage = createServerFn({ method: "POST" })
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "google/gemini-3-pro-image-preview",
         messages: [
-          { role: "user", content: `High quality detailed artwork: ${data.prompt}. Cinematic lighting, ultra detailed.` },
+          { role: "user", content: `Masterpiece NFT artwork, ultra-high fidelity: ${data.prompt}. Award-winning composition, dramatic cinematic lighting, ultra-detailed textures, painterly depth, rich color grading, 8k poster-quality, no watermark, no text.` },
         ],
         modalities: ["image", "text"],
       }),
