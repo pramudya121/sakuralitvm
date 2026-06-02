@@ -33,7 +33,7 @@ export const Route = createFileRoute("/profile")({
 
 function Profile() {
   const { address } = useWallet();
-  const { nfts } = useAllNFTs();
+  const { nfts, loading: nftsLoading } = useAllNFTs();
   const { listings } = useAllListings();
   const { profile, save } = useProfile(address);
   const [sort, setSort] = useState("newest");
@@ -152,7 +152,17 @@ function Profile() {
               </SelectContent>
             </Select>
           </div>
-          {owned.length === 0 ? (
+          {nftsLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="aspect-square skeleton" />
+                  <div className="h-3 w-2/3 skeleton" />
+                  <div className="h-3 w-1/3 skeleton" />
+                </div>
+              ))}
+            </div>
+          ) : owned.length === 0 ? (
             <div className="text-center py-12 glass rounded-2xl text-muted-foreground">You don't own any NFTs yet.</div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
