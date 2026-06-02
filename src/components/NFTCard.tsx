@@ -39,12 +39,17 @@ export function NFTCard({ nft, listing, onBuy }: { nft: NFTMeta; listing?: Listi
   }
 
   return (
-    <div className="glass rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-300 glow-card flex flex-col">
+    <div className="nft-card group flex flex-col">
       <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-accent/40 to-secondary/40">
         {nft.image ? (
-          <img src={nft.image} alt={nft.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+          <img src={nft.image} alt={nft.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl">🌸</div>
+        )}
+        {/* Token id badge */}
+        <span className="absolute top-3 left-3 px-2 py-1 rounded-full text-[10px] font-mono font-semibold bg-black/55 text-white backdrop-blur-md ring-1 ring-white/10">#{id}</span>
+        {listing && (
+          <span className="absolute bottom-3 left-3 price-chip">{(+listing.priceEth).toFixed(4)} {CHAIN.symbol}</span>
         )}
         <button
           onClick={(e) => {
@@ -52,26 +57,18 @@ export function NFTCard({ nft, listing, onBuy }: { nft: NFTMeta; listing?: Listi
             if (!address) { toast.error("Connect wallet to use watchlist"); return; }
             toggle(id);
           }}
-          className="absolute top-3 right-3 w-9 h-9 rounded-full glass flex items-center justify-center hover:scale-110 transition"
+          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/55 backdrop-blur-md ring-1 ring-white/10 flex items-center justify-center hover:scale-110 transition text-white"
           aria-label="Toggle watchlist"
         >
           <Heart className={`w-4 h-4 ${isFav ? "fill-primary text-primary" : ""}`} />
         </button>
       </div>
-      <div className="p-4 flex-1 flex flex-col gap-2">
+      <div className="p-4 flex-1 flex flex-col gap-2 relative z-10">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold truncate">{nft.name}</h3>
-          <span className="text-xs text-muted-foreground shrink-0">#{id}</span>
         </div>
         <Link to="/u/$address" params={{ address: nft.owner }} onClick={(e) => e.stopPropagation()} className="text-xs text-muted-foreground hover:text-primary truncate">by {shortAddr(nft.owner)}</Link>
-        {listing ? (
-          <div className="flex items-baseline justify-between mt-1">
-            <span className="text-xs text-muted-foreground">Price</span>
-            <span className="font-bold text-primary">{(+listing.priceEth).toFixed(4)} {CHAIN.symbol}</span>
-          </div>
-        ) : (
-          <div className="text-xs text-muted-foreground">Not listed</div>
-        )}
+        {!listing && <div className="text-xs text-muted-foreground">Not listed</div>}
         <div className="grid grid-cols-3 gap-1.5 mt-auto pt-2">
           <Button asChild size="sm" variant="outline" className="px-2">
             <Link to="/marketplace/$id" params={{ id }}><Eye className="w-3.5 h-3.5" /></Link>

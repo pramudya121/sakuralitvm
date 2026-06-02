@@ -26,7 +26,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isHome = path === "/";
   return (
     <div className="relative min-h-screen">
-      {isHome && <SakuraBackground count={40} intense />}
+      {isHome && <SakuraBackground count={60} intense />}
       <OnChainEventListener />
       <div className="relative z-10">
         <header className="sticky top-0 z-50 glass border-b">
