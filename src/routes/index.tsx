@@ -5,7 +5,7 @@ import { useAllListings, useAllNFTs } from "@/lib/web3/hooks";
 import { CHAIN } from "@/lib/web3/contracts";
 import { NFTCard } from "@/components/NFTCard";
 import { useTrendingTokenIds } from "@/lib/supabase-hooks";
-import heroBg from "@/assets/home-hero-bg.png";
+
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -31,13 +31,9 @@ function Home() {
 
   return (
     <div className="space-y-20">
-      {/* Fixed full-screen hero background (covers entire home) */}
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      />
-      <div aria-hidden className="fixed inset-0 -z-10 bg-gradient-to-b from-background/0 via-background/25 to-background/70 pointer-events-none" />
+      {/* Pure-CSS hero background — instant render, no image download */}
+      <div aria-hidden className="fixed inset-0 -z-10 hero-bg-gradient" />
+      <div aria-hidden className="fixed inset-0 -z-10 bg-gradient-to-b from-background/0 via-background/15 to-background/60 pointer-events-none" />
 
       {/* Hero content */}
       <section className="relative -mx-4 md:-mx-8 -mt-8 min-h-[88vh] flex items-center justify-center">

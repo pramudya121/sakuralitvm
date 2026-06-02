@@ -21,7 +21,7 @@ export const TOKENS: TokenInfo[] = [
   { symbol: "BNB",     name: "Binance Coin",      address: "0x31351646e2c5479A30f846dFa4297E9Dbe189a63", decimals: 18, cmcId: 1839,  logo: logo(1839)  },
   { symbol: "MON",     name: "Monad",             address: "0xa12C18847c41ECE267155ffAe112b8951AbbcA1C", decimals: 18, cmcId: 28478, logo: monLogo     },
   { symbol: "HYPE",    name: "Hyperliquid",       address: "0xBB3B44EB672650Fb4a1Cf6D9dc5d3b7494F333AB", decimals: 18, cmcId: 32196, logo: logo(32196) },
-  { symbol: "WDEX",    name: "WolfDex Token",     address: "",                                       decimals: 18, cmcId: 0,     logo: logo(7083)  },
+  
   { symbol: "LITVM",   name: "LitVM",             address: "0xF143eCFE3DFEEB4ae188cA4f1c7c7ab0b5F592eb", decimals: 18, cmcId: 0,     logo: litvmLogo   },
 ];
 
