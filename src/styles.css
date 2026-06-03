@@ -103,12 +103,12 @@
   }
 }
 
-/* Sakura petal animation */
+/* Sakura petal animation — rotates from a randomised start angle for organic feel */
 @keyframes petal-fall {
-  0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
+  0% { transform: translate3d(0, -10vh, 0) rotate(var(--rot-start, 0deg)); opacity: 0; }
   10% { opacity: 1; }
   90% { opacity: 1; }
-  100% { transform: translate3d(var(--drift, 80px), 110vh, 0) rotate(720deg); opacity: 0; }
+  100% { transform: translate3d(var(--drift, 80px), 110vh, 0) rotate(var(--rot-end, 720deg)); opacity: 0; }
 }
 @keyframes petal-sway {
   0%, 100% { transform: translateX(0); }
@@ -129,9 +129,18 @@
   width: 18px; height: 18px;
   background: radial-gradient(circle at 30% 30%, oklch(0.95 0.08 340), oklch(0.7 0.18 350));
   border-radius: 150% 0 150% 0;
-  filter: drop-shadow(0 2px 4px rgba(255,182,193,0.4));
+  filter: drop-shadow(0 2px 6px rgba(255,150,180,0.45));
   animation: petal-fall linear infinite, petal-sway ease-in-out infinite;
   will-change: transform, opacity;
+}
+
+/* Hero background image — softened with subtle parallax-ready scale */
+.hero-bg-image {
+  filter: saturate(108%) brightness(0.92);
+  transform: scale(1.02);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-bg-image { transition: transform 800ms ease; }
 }
 
 .glass {
