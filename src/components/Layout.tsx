@@ -4,7 +4,7 @@ import { WalletButton } from "./WalletButton";
 import { NotificationBell } from "./NotificationBell";
 import { OnChainEventListener } from "./OnChainEventListener";
 import { ThemeToggle } from "./ThemeToggle";
-import { Home, Store, Plus, Trophy, BarChart3, User, Heart, Repeat } from "lucide-react";
+import { Home, Store, Plus, Trophy, BarChart3, User, Heart, Repeat, Activity, BookOpen } from "lucide-react";
 import sakuraLogo from "@/assets/sakura-logo.png";
 import { AIChatWidget } from "./AIChatWidget";
 
@@ -13,10 +13,12 @@ const navItems = [
   { to: "/marketplace", label: "Market", icon: Store },
   { to: "/mint", label: "Mint", icon: Plus },
   { to: "/dex", label: "DEX", icon: Repeat },
+  { to: "/activity", label: "Activity", icon: Activity },
   { to: "/leaderboard", label: "Leaders", icon: Trophy },
   { to: "/analytics", label: "Stats", icon: BarChart3 },
   { to: "/watchlist", label: "Watch", icon: Heart },
   { to: "/profile", label: "Profile", icon: User },
+  { to: "/docs", label: "Docs", icon: BookOpen },
 ];
 
 
