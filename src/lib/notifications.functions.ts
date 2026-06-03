@@ -19,7 +19,9 @@ const schema = z.object({
   title: z.string().min(1).max(200),
   message: z.string().max(1000).optional().nullable(),
   tokenId: z.union([z.number(), z.string()]).optional().nullable(),
-  link: z.string().max(500).optional().nullable(),
+  // Only relative app-internal paths are permitted to prevent the notification
+  // system from being used as a phishing redirector.
+  link: z.string().max(500).regex(/^\/[a-zA-Z0-9\-/_?#=&.]*$/, "Link must be a relative path").optional().nullable(),
 });
 
 export const pushNotificationServer = createServerFn({ method: "POST" })

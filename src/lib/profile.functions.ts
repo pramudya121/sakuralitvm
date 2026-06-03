@@ -9,7 +9,10 @@ const PatchSchema = z.object({
   avatar_url: z.string().url().max(2048).optional().nullable(),
   banner_url: z.string().url().max(2048).optional().nullable(),
   twitter: z.string().max(80).optional().nullable(),
-  website: z.string().max(2048).optional().nullable(),
+  website: z.string().url().max(2048).refine(
+    (u) => u.startsWith("https://") || u.startsWith("http://"),
+    "Website must be an http(s) URL",
+  ).optional().nullable(),
 });
 
 export const upsertProfile = createServerFn({ method: "POST" })

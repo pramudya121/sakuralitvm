@@ -100,9 +100,15 @@ export async function issueNonce(address: string): Promise<string> {
   return nonce;
 }
 
-export async function verifySiweAndIssueJwt(message: string, signature: string): Promise<{ jwt: string; wallet: string; exp: number }> {
+export async function verifySiweAndIssueJwt(message: string, signature: string, expectedDomain: string): Promise<{ jwt: string; wallet: string; exp: number }> {
   const parsed = parseSiweMessage(message);
   if (!parsed) throw new Error("Malformed SIWE message");
+  // EIP-4361 domain binding: reject signatures issued for a different host
+  // (prevents relay attacks where a victim signs on a phishing site and the
+  // attacker replays the signature against the real verify endpoint).
+  if (!expectedDomain || parsed.domain.toLowerCase() !== expectedDomain.toLowerCase()) {
+    throw new Error("Domain mismatch: signature was not issued for this site");
+  }
   let recovered: string;
   try {
     recovered = verifyMessage(message, signature);
