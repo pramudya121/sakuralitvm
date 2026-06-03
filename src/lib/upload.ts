@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { uploadNftImage } from "./storage.functions";
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
 const ALLOWED_EXT = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
@@ -18,11 +18,30 @@ export function assertSafeImage(file: File) {
   return ext;
 }
 
-export async function uploadImage(file: File, folder = "profile"): Promise<string> {
-  const ext = assertSafeImage(file);
-  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error } = await supabase.storage.from("nft-images")
-    .upload(path, file, { contentType: file.type, upsert: false });
-  if (error) throw error;
-  return supabase.storage.from("nft-images").getPublicUrl(path).data.publicUrl;
+async function fileToBase64(file: File): Promise<string> {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < buf.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + chunk)) as unknown as number[]);
+  }
+  return btoa(binary);
+}
+
+export async function uploadImage(
+  file: File,
+  folder: "profile" | "banner" | "nft" | "mint" = "profile",
+): Promise<string> {
+  assertSafeImage(file);
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120) || "upload.bin";
+  const dataBase64 = await fileToBase64(file);
+  const { url } = await uploadNftImage({
+    data: {
+      folder,
+      filename: safeName,
+      contentType: file.type,
+      dataBase64,
+    },
+  });
+  return url;
 }

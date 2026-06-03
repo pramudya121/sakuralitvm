@@ -109,19 +109,13 @@ export async function mintNFT(
   extra?: Record<string, any>,
 ) {
   onProgress?.("Uploading image...");
-  // Lazy import to keep web3 module client-bundle small
-  const { supabase } = await import("@/integrations/supabase/client");
-  const { assertSafeImage } = await import("@/lib/upload");
-  const ext = assertSafeImage(file);
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error: upErr } = await supabase.storage.from("nft-images")
-    .upload(path, file, { contentType: file.type, upsert: false });
+  const { uploadImage } = await import("@/lib/upload");
   let imageUrl: string;
-  if (upErr) {
+  try {
+    imageUrl = await uploadImage(file, "mint");
+  } catch (e) {
     onProgress?.("Storage upload failed, using on-chain encoding...");
     imageUrl = await fileToDataUrl(file);
-  } else {
-    imageUrl = supabase.storage.from("nft-images").getPublicUrl(path).data.publicUrl;
   }
   const metadata = { name, description, image: imageUrl, ...(extra ?? {}) };
   const tokenUri = "data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(metadata))));
