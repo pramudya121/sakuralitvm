@@ -13,7 +13,8 @@ export const Route = createFileRoute("/api/public/siwe/verify")({
       POST: async ({ request }) => {
         try {
           const body = Body.parse(await request.json());
-          const { jwt, wallet, exp } = await verifySiweAndIssueJwt(body.message, body.signature);
+          const host = new URL(request.url).host;
+          const { jwt, wallet, exp } = await verifySiweAndIssueJwt(body.message, body.signature, host);
           return Response.json({ jwt, wallet, exp });
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Verification failed";
