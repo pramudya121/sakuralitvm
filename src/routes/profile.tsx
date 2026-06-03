@@ -216,7 +216,7 @@ function EditDialog({ profile, onSave }: { profile: DBProfile | null; onSave: (p
     try {
       setUploading(kind);
       const { uploadImage } = await import("@/lib/upload");
-      const url = await uploadImage(file, kind);
+      const url = await uploadImage(file, kind === "avatar" ? "profile" : "banner");
       setDraft((d) => ({ ...d, [`${kind}_url`]: url }));
       toast.success(`${kind} uploaded`);
     } catch (e: any) {
