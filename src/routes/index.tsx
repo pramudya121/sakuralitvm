@@ -31,9 +31,15 @@ function Home() {
 
   return (
     <div className="space-y-20">
-      {/* Pure-CSS hero background — instant render, no image download */}
-      <div aria-hidden className="fixed inset-0 -z-10 hero-bg-gradient" />
-      <div aria-hidden className="fixed inset-0 -z-10 bg-gradient-to-b from-background/0 via-background/15 to-background/60 pointer-events-none" />
+      {/* Hero background — sakura image restored with smooth gradient overlays */}
+      <div
+        aria-hidden
+        className="fixed inset-0 -z-10 bg-cover bg-center hero-bg-image"
+        style={{ backgroundImage: "url(/home-hero-bg.png)" }}
+      />
+      <div aria-hidden className="fixed inset-0 -z-10 hero-bg-gradient opacity-60" />
+      <div aria-hidden className="fixed inset-0 -z-10 bg-gradient-to-b from-background/0 via-background/15 to-background/70 pointer-events-none" />
+
 
       {/* Hero content */}
       <section className="relative -mx-4 md:-mx-8 -mt-8 min-h-[88vh] flex items-center justify-center">
