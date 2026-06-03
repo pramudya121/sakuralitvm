@@ -14,8 +14,10 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MintRouteImport } from './routes/mint'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DexRouteImport } from './routes/dex'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as DexIndexRouteImport } from './routes/dex.index'
@@ -51,6 +53,11 @@ const LeaderboardRoute = LeaderboardRouteImport.update({
   path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DexRoute = DexRouteImport.update({
   id: '/dex',
   path: '/dex',
@@ -59,6 +66,11 @@ const DexRoute = DexRouteImport.update({
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivityRoute = ActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -109,8 +121,10 @@ const ApiPublicSiweNonceRoute = ApiPublicSiweNonceRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
   '/dex': typeof DexRouteWithChildren
+  '/docs': typeof DocsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/mint': typeof MintRoute
   '/profile': typeof ProfileRoute
@@ -127,7 +141,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
+  '/docs': typeof DocsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/mint': typeof MintRoute
   '/profile': typeof ProfileRoute
@@ -145,8 +161,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
   '/dex': typeof DexRouteWithChildren
+  '/docs': typeof DocsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/mint': typeof MintRoute
   '/profile': typeof ProfileRoute
@@ -165,8 +183,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/activity'
     | '/analytics'
     | '/dex'
+    | '/docs'
     | '/leaderboard'
     | '/mint'
     | '/profile'
@@ -183,7 +203,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/activity'
     | '/analytics'
+    | '/docs'
     | '/leaderboard'
     | '/mint'
     | '/profile'
@@ -200,8 +222,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/activity'
     | '/analytics'
     | '/dex'
+    | '/docs'
     | '/leaderboard'
     | '/mint'
     | '/profile'
@@ -219,8 +243,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActivityRoute: typeof ActivityRoute
   AnalyticsRoute: typeof AnalyticsRoute
   DexRoute: typeof DexRouteWithChildren
+  DocsRoute: typeof DocsRoute
   LeaderboardRoute: typeof LeaderboardRoute
   MintRoute: typeof MintRoute
   ProfileRoute: typeof ProfileRoute
@@ -270,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dex': {
       id: '/dex'
       path: '/dex'
@@ -282,6 +315,13 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activity': {
+      id: '/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof ActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -366,8 +406,10 @@ const DexRouteWithChildren = DexRoute._addFileChildren(DexRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActivityRoute: ActivityRoute,
   AnalyticsRoute: AnalyticsRoute,
   DexRoute: DexRouteWithChildren,
+  DocsRoute: DocsRoute,
   LeaderboardRoute: LeaderboardRoute,
   MintRoute: MintRoute,
   ProfileRoute: ProfileRoute,

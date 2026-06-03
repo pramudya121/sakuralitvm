@@ -9,6 +9,8 @@ const ROUTES = [
   { path: "/mint", changefreq: "weekly", priority: "0.8" },
   { path: "/dex", changefreq: "weekly", priority: "0.8" },
   { path: "/dex/liquidity", changefreq: "weekly", priority: "0.6" },
+  { path: "/activity", changefreq: "hourly", priority: "0.7" },
+  { path: "/docs", changefreq: "weekly", priority: "0.7" },
   { path: "/analytics", changefreq: "daily", priority: "0.5" },
   { path: "/leaderboard", changefreq: "daily", priority: "0.5" },
 ];
